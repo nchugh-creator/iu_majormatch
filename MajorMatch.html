@@ -1,0 +1,2631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MajorMatch - IU Bloomington</title>
+<style>
+  :root {
+    --crimson: #990000;
+    --crimson-dark: #6b0000;
+    --crimson-light: #c41e1e;
+    --cream: #F2EFE4;
+    --cream-dark: #e8e3d3;
+    --ink: #2b2b2b;
+    --gray: #8a8a8a;
+    --gray-light: #d8d4c5;
+    --green: #4a7c59;
+    --shadow: 0 6px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 14px 40px rgba(0,0,0,0.16);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select { font: inherit; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* ============ LOGIN SCREEN ============ */
+  #login {
+    background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-dark) 100%);
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--cream);
+    padding: 20px;
+  }
+  #login.active { display: flex; }
+  .login-box {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 48px 40px;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+  .trident { width: 88px; height: 88px; margin: 0 auto 18px; display: block; }
+  .login-title { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .login-sub { font-size: 14px; opacity: 0.85; margin-bottom: 28px; }
+  .login-form { display: flex; flex-direction: column; gap: 12px; }
+  .login-form input {
+    background: rgba(255,255,255,0.95);
+    border: none;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+  }
+  .login-btn {
+    background: var(--cream);
+    color: var(--crimson);
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    margin-top: 8px;
+    transition: transform 0.1s;
+  }
+  .login-btn:hover { transform: translateY(-1px); }
+  .login-foot { margin-top: 22px; font-size: 12px; opacity: 0.7; }
+
+  /* ============ APP HEADER ============ */
+  .header {
+    background: var(--crimson);
+    color: var(--cream);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-trident { width: 28px; height: 28px; }
+  .header-title { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
+  .header-nav { display: flex; gap: 4px; }
+  .nav-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: var(--cream);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.1); }
+  .nav-btn.active { background: rgba(255,255,255,0.18); }
+  .saved-badge {
+    background: var(--cream);
+    color: var(--crimson);
+    border-radius: 999px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 800;
+    margin-left: 4px;
+  }
+
+  /* ============ PICKER SCREEN ============ */
+  .picker-wrap { max-width: 760px; margin: 0 auto; padding: 36px 22px 60px; }
+  .picker-h { font-size: 28px; font-weight: 800; color: var(--crimson); margin-bottom: 6px; letter-spacing: -0.5px; }
+  .picker-sub { color: var(--gray); margin-bottom: 28px; font-size: 15px; }
+  .filter-section { margin-bottom: 28px; }
+  .filter-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 700;
+    color: var(--crimson);
+    margin-bottom: 12px;
+  }
+  .chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    padding: 10px 16px;
+    background: white;
+    border: 2px solid var(--gray-light);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .chip:hover:not(.disabled) { border-color: var(--crimson-light); }
+  .chip.selected {
+    background: var(--crimson);
+    color: var(--cream);
+    border-color: var(--crimson);
+  }
+  .chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--gray-light);
+    color: var(--gray);
+    border-color: var(--gray-light);
+  }
+  .chip .count {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-left: 4px;
+  }
+  .picker-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+  }
+  .btn-primary {
+    flex: 1;
+    background: var(--crimson);
+    color: var(--cream);
+    padding: 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--crimson-dark); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: white;
+    color: var(--crimson);
+    padding: 16px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    border: 2px solid var(--crimson);
+  }
+  .btn-secondary:hover { background: var(--crimson); color: var(--cream); }
+  .pool-count {
+    text-align: center;
+    color: var(--gray);
+    font-size: 13px;
+    margin-top: 14px;
+  }
+  .pool-count strong { color: var(--crimson); font-size: 16px; }
+
+  /* ============ SWIPE SCREEN ============ */
+  .swipe-wrap {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    position: relative;
+  }
+  .swipe-stage {
+    position: relative;
+    height: 580px;
+    margin-bottom: 24px;
+  }
+  .swipe-card {
+    position: absolute;
+    inset: 0;
+    background: white;
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    will-change: transform;
+    cursor: grab;
+  }
+  .swipe-card.dragging { transition: none; cursor: grabbing; }
+  .swipe-card-banner {
+    height: 130px;
+    background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-dark) 100%);
+    color: var(--cream);
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+  }
+  .swipe-card-college {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.9;
+    margin-bottom: 6px;
+  }
+  .swipe-card-title {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+  .swipe-admission-tag {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(6px);
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .swipe-card-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .swipe-section { margin-bottom: 16px; }
+  .swipe-section-h {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+    color: var(--crimson);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .swipe-desc { color: #444; font-size: 14px; line-height: 1.55; }
+  .swipe-tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swipe-tag {
+    background: var(--cream-dark);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .swipe-salary {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--green);
+  }
+  .swipe-overlay {
+    position: absolute;
+    top: 28px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    border: 4px solid;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s;
+  }
+  .swipe-overlay.like {
+    right: 22px;
+    color: var(--green);
+    border-color: var(--green);
+    transform: rotate(12deg);
+  }
+  .swipe-overlay.nope {
+    left: 22px;
+    color: var(--crimson);
+    border-color: var(--crimson);
+    transform: rotate(-12deg);
+  }
+  .swipe-actions {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    align-items: center;
+  }
+  .action-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    transition: transform 0.1s, box-shadow 0.15s;
+  }
+  .action-btn:hover { transform: scale(1.07); box-shadow: var(--shadow-lg); }
+  .action-btn.skip { color: var(--crimson); }
+  .action-btn.info { width: 52px; height: 52px; font-size: 22px; color: var(--gray); }
+  .action-btn.like { color: var(--green); }
+  .swipe-empty {
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .swipe-empty-h { font-size: 22px; font-weight: 800; color: var(--crimson); margin-bottom: 8px; }
+  .swipe-empty-p { color: var(--gray); margin-bottom: 22px; }
+
+  /* ============ EXPLORE SCREEN ============ */
+  .explore-wrap {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 22px 60px;
+  }
+  .sidebar {
+    background: white;
+    border-radius: 14px;
+    padding: 22px 20px;
+    box-shadow: var(--shadow);
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+  }
+  .sidebar h3 {
+    font-size: 16px;
+    color: var(--crimson);
+    margin-bottom: 16px;
+    font-weight: 800;
+  }
+  .sidebar-group { margin-bottom: 20px; }
+  .sidebar-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--gray);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .sidebar select, .sidebar input[type="search"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--gray-light);
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+  }
+  .sidebar select:focus, .sidebar input[type="search"]:focus { border-color: var(--crimson); }
+  .sidebar-clear {
+    width: 100%;
+    padding: 10px;
+    background: var(--cream-dark);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+  .results-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    color: var(--gray);
+    font-size: 13px;
+  }
+  .results-bar strong { color: var(--crimson); }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .mini-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.15s;
+    border-left: 4px solid var(--crimson);
+  }
+  .mini-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .mini-card-college {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    color: var(--gray);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .mini-card-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .mini-card-desc {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mini-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .mini-card-salary { color: var(--green); font-weight: 700; }
+  .mini-card-tag {
+    background: var(--cream-dark);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gray);
+  }
+
+  /* ============ DETAIL MODAL ============ */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 200;
+    padding: 24px 14px;
+    overflow-y: auto;
+  }
+  .modal-bg.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 720px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin: auto;
+  }
+  .modal-banner {
+    background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-dark) 100%);
+    color: var(--cream);
+    padding: 28px 32px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.3); }
+  .modal-college {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.9;
+    margin-bottom: 6px;
+  }
+  .modal-title { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+  .modal-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .modal-meta-tag {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .modal-body { padding: 26px 32px 30px; }
+  .modal-section { margin-bottom: 22px; }
+  .modal-section h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+    color: var(--crimson);
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .modal-section p, .modal-section li {
+    color: #333;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .modal-section ul { padding-left: 18px; }
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+  }
+  .course-tag {
+    background: var(--cream-dark);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--ink);
+  }
+  .careers-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .career-tag {
+    background: white;
+    border: 1.5px solid var(--gray-light);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .salary-pill {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .reality-box {
+    background: var(--cream-dark);
+    padding: 14px 18px;
+    border-radius: 10px;
+    border-left: 4px solid var(--crimson);
+    font-style: italic;
+    font-size: 14px;
+    color: #444;
+  }
+  .quote-box {
+    background: linear-gradient(135deg, #fdfcf6 0%, var(--cream-dark) 100%);
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    color: #333;
+    line-height: 1.55;
+    position: relative;
+  }
+  .quote-box::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    font-size: 60px;
+    color: var(--crimson);
+    opacity: 0.25;
+    font-family: Georgia, serif;
+  }
+  .quote-attr {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--gray);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .rso-list { display: flex; flex-direction: column; gap: 8px; }
+  .rso-item {
+    background: white;
+    border: 1.5px solid var(--gray-light);
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .rso-name { font-weight: 700; color: var(--ink); font-size: 14px; }
+  .rso-desc { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .modal-actions .btn-primary { flex: 1; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 880px) {
+    .explore-wrap { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+  }
+  @media (max-width: 520px) {
+    .header { padding: 12px 14px; }
+    .header-title { font-size: 16px; }
+    .nav-btn { padding: 6px 10px; font-size: 12px; }
+    .picker-wrap { padding: 24px 16px 50px; }
+    .picker-h { font-size: 24px; }
+    .swipe-stage { height: 540px; }
+    .modal-banner { padding: 22px 22px; }
+    .modal-title { font-size: 24px; }
+    .modal-body { padding: 20px 22px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="login" class="active">
+  <div class="login-box">
+    <svg class="trident" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="IU trident">
+      <!-- Stylized IU trident -->
+      <g fill="#F2EFE4">
+        <!-- Center prong -->
+        <rect x="46" y="14" width="8" height="58" rx="1"/>
+        <polygon points="50,6 42,18 58,18"/>
+        <!-- Left prong -->
+        <rect x="22" y="22" width="7" height="44" rx="1"/>
+        <polygon points="25.5,14 18,26 33,26"/>
+        <!-- Right prong -->
+        <rect x="71" y="22" width="7" height="44" rx="1"/>
+        <polygon points="74.5,14 67,26 82,26"/>
+        <!-- Cross-bar at bottom -->
+        <rect x="18" y="64" width="64" height="8" rx="1"/>
+        <!-- Stem -->
+        <rect x="46" y="72" width="8" height="18" rx="1"/>
+        <rect x="38" y="88" width="24" height="6" rx="1"/>
+      </g>
+    </svg>
+    <h1 class="login-title">MajorMatch</h1>
+    <p class="login-sub">Find your major at Indiana University Bloomington</p>
+    <form class="login-form" id="login-form">
+      <input type="text" id="netid" placeholder="IU Username (NetID)" required autocomplete="username" />
+      <input type="password" id="passphrase" placeholder="Passphrase" required autocomplete="current-password" />
+      <button type="submit" class="login-btn">Sign In with CAS</button>
+    </form>
+    <p class="login-foot">Demo only — no credentials are sent or stored.</p>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app" class="screen">
+  <header class="header">
+    <div class="header-left">
+      <svg class="header-trident" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#F2EFE4">
+          <rect x="46" y="14" width="8" height="58" rx="1"/>
+          <polygon points="50,6 42,18 58,18"/>
+          <rect x="22" y="22" width="7" height="44" rx="1"/>
+          <polygon points="25.5,14 18,26 33,26"/>
+          <rect x="71" y="22" width="7" height="44" rx="1"/>
+          <polygon points="74.5,14 67,26 82,26"/>
+          <rect x="18" y="64" width="64" height="8" rx="1"/>
+          <rect x="46" y="72" width="8" height="18" rx="1"/>
+          <rect x="38" y="88" width="24" height="6" rx="1"/>
+        </g>
+      </svg>
+      <div class="header-title">MajorMatch</div>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn" data-view="picker">Start</button>
+      <button class="nav-btn" data-view="swipe">Swipe</button>
+      <button class="nav-btn" data-view="explore">Explore</button>
+      <button class="nav-btn" data-view="saved">Saved <span class="saved-badge" id="saved-count">0</span></button>
+    </nav>
+  </header>
+
+  <!-- ============ PICKER VIEW ============ -->
+  <section id="view-picker" class="view">
+    <div class="picker-wrap">
+      <h2 class="picker-h">What sparks you?</h2>
+      <p class="picker-sub">Pick a few areas you're curious about. We'll surface IU majors that match — swipe right to save, left to skip.</p>
+
+      <div class="filter-section">
+        <div class="filter-label">Interest Areas</div>
+        <div class="chip-grid" id="chips-interest"></div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Schools & Colleges</div>
+        <div class="chip-grid" id="chips-school"></div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Career Direction</div>
+        <div class="chip-grid" id="chips-career"></div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Salary Tier (optional)</div>
+        <div class="chip-grid" id="chips-salary"></div>
+      </div>
+
+      <div class="pool-count" id="pool-count">Pool: <strong>0</strong> majors match your filters</div>
+
+      <div class="picker-actions">
+        <button class="btn-secondary" id="btn-clear-picker">Reset</button>
+        <button class="btn-primary" id="btn-start-swipe">Start Swiping →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SWIPE VIEW ============ -->
+  <section id="view-swipe" class="view" style="display:none;">
+    <div class="swipe-wrap">
+      <div class="swipe-stage" id="swipe-stage"></div>
+      <div class="swipe-actions" id="swipe-actions" style="display:none;">
+        <button class="action-btn skip" id="btn-skip" aria-label="Skip">✕</button>
+        <button class="action-btn info" id="btn-info" aria-label="More info">i</button>
+        <button class="action-btn like" id="btn-like" aria-label="Save">♥</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPLORE VIEW ============ -->
+  <section id="view-explore" class="view" style="display:none;">
+    <div class="explore-wrap">
+      <aside class="sidebar">
+        <h3>Filters</h3>
+        <div class="sidebar-group">
+          <label class="sidebar-label">Search</label>
+          <input type="search" id="explore-search" placeholder="Major name…" />
+        </div>
+        <div class="sidebar-group">
+          <label class="sidebar-label">School / College</label>
+          <select id="explore-school"><option value="">All schools</option></select>
+        </div>
+        <div class="sidebar-group">
+          <label class="sidebar-label">Interest Area</label>
+          <select id="explore-interest"><option value="">All interests</option></select>
+        </div>
+        <div class="sidebar-group">
+          <label class="sidebar-label">Career Path</label>
+          <select id="explore-career"><option value="">All paths</option></select>
+        </div>
+        <div class="sidebar-group">
+          <label class="sidebar-label">Admission Type</label>
+          <select id="explore-admission"><option value="">All</option></select>
+        </div>
+        <div class="sidebar-group">
+          <label class="sidebar-label">Salary Tier</label>
+          <select id="explore-salary">
+            <option value="">All</option>
+            <option value="entry">Entry ($35k–$50k)</option>
+            <option value="mid">Mid ($50k–$70k)</option>
+            <option value="high">High ($70k–$95k)</option>
+            <option value="top">Top ($95k+)</option>
+          </select>
+        </div>
+        <button class="sidebar-clear" id="btn-clear-explore">Clear all filters</button>
+      </aside>
+
+      <main>
+        <div class="results-bar">
+          <span><strong id="explore-count">0</strong> majors</span>
+          <span id="explore-mode-note"></span>
+        </div>
+        <div class="grid-cards" id="explore-grid"></div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ============ SAVED VIEW ============ -->
+  <section id="view-saved" class="view" style="display:none;">
+    <div class="explore-wrap" style="grid-template-columns: 1fr;">
+      <main>
+        <div class="results-bar">
+          <span><strong id="saved-count2">0</strong> saved majors</span>
+          <button class="btn-secondary" id="btn-clear-saved" style="padding: 8px 16px; font-size: 13px;">Clear all</button>
+        </div>
+        <div class="grid-cards" id="saved-grid"></div>
+      </main>
+    </div>
+  </section>
+</div>
+
+<!-- ============ DETAIL MODAL ============ -->
+<div class="modal-bg" id="modal">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+/* ============ DATA: MAJORS, RSOS, MINORS_DATA ============ */
+/* Career path buckets, interest areas, salary tiers */
+
+const RSOS = [
+  { name: "ACM at IU", desc: "Computer science club, hackathons, tech talks", tags: ["cs","info","data","tech"] },
+  { name: "Hoosier Hackers", desc: "CTF & cybersecurity competition team", tags: ["cs","cyber","tech"] },
+  { name: "Women in Computing (WIC)", desc: "Community for women in tech at Luddy", tags: ["cs","info","tech"] },
+  { name: "IU Data Science Club", desc: "Projects, Kaggle competitions, speaker series", tags: ["data","stats","cs"] },
+  { name: "IUEsports", desc: "Competitive gaming and game-dev community", tags: ["games","media","cs"] },
+  { name: "Investment Banking Workshop (IBW)", desc: "Kelley's IB recruiting program", tags: ["finance","accounting","business"] },
+  { name: "Investment Management Workshop (IMW)", desc: "Kelley equity research / asset mgmt program", tags: ["finance","business"] },
+  { name: "Kelley Marketing Club", desc: "Brand cases, agency speakers, Kelley networking", tags: ["marketing","business"] },
+  { name: "Kelley Real Estate Club", desc: "REPE, brokerage, development speakers", tags: ["realestate","finance","business"] },
+  { name: "Indiana Business Consulting (IBC)", desc: "Student-run consulting firm for live clients", tags: ["consulting","business","mgmt"] },
+  { name: "Net Impact IU", desc: "Sustainable & social-impact business", tags: ["business","public","sustain"] },
+  { name: "Society of Women in Business", desc: "Mentorship, career events for Kelley women", tags: ["business"] },
+  { name: "Kelley Entrepreneurship Club", desc: "Pitch competitions, founder talks", tags: ["entrepreneur","business"] },
+  { name: "Beta Alpha Psi", desc: "Accounting/finance honor society", tags: ["accounting","finance"] },
+  { name: "Supply Chain Club at Kelley", desc: "Logistics case comps and recruiting", tags: ["supplychain","business"] },
+  { name: "Sales Club at Kelley", desc: "Roleplay competitions, recruiting", tags: ["sales","marketing","business"] },
+  { name: "IU Pre-Med Association", desc: "MCAT prep, clinical shadowing, speakers", tags: ["bio","premed","health","chem"] },
+  { name: "Pre-Dental Society", desc: "Pre-dental advising and DAT prep", tags: ["bio","premed","health"] },
+  { name: "Minority Association of Pre-Medical Students (MAPS)", desc: "Pre-health for underrepresented students", tags: ["bio","premed","health"] },
+  { name: "Phi Delta Epsilon (Pre-Med Frat)", desc: "Pre-medical professional fraternity", tags: ["bio","premed","health"] },
+  { name: "Society of Women in Science", desc: "STEM women's community", tags: ["science","bio","chem","physics"] },
+  { name: "American Chemical Society (IU Chapter)", desc: "Chem research, ACS networking", tags: ["chem","biochem"] },
+  { name: "Society of Physics Students", desc: "Physics talks, observatory trips", tags: ["physics","astro"] },
+  { name: "IU Astronomy Club", desc: "Kirkwood Observatory nights, star parties", tags: ["astro","physics"] },
+  { name: "Math Club", desc: "Putnam prep, problem-solving evenings", tags: ["math","stats"] },
+  { name: "Statistical Association at IU", desc: "Stats research and career events", tags: ["stats","data"] },
+  { name: "Psi Chi (Psychology Honor Society)", desc: "Research opportunities and grad school prep", tags: ["psych","cogsci"] },
+  { name: "IU Neuroscience Club", desc: "Brain research, faculty speakers", tags: ["neuro","bio","psych"] },
+  { name: "Cognitive Science Club", desc: "AI, linguistics, philosophy crossover", tags: ["cogsci","cs","psych"] },
+  { name: "Model United Nations (IUMUN)", desc: "Diplomacy simulations and conferences", tags: ["polisci","intl","public"] },
+  { name: "IU Student Foundation", desc: "Little 500 organizers, philanthropy & leadership", tags: ["business","public","leadership"] },
+  { name: "IU Political and Civic Engagement Club", desc: "Policy debate and civic action", tags: ["polisci","public","law"] },
+  { name: "Hoosiers for Humanity (Habitat)", desc: "Housing build trips and advocacy", tags: ["public","social"] },
+  { name: "Pre-Law Society", desc: "LSAT prep, law school panels", tags: ["polisci","law","public"] },
+  { name: "Phi Alpha Delta (Pre-Law)", desc: "Pre-law professional fraternity", tags: ["polisci","law","public"] },
+  { name: "Indiana Daily Student", desc: "Award-winning student newspaper", tags: ["journalism","media"] },
+  { name: "WIUX Radio", desc: "Student-run college radio station", tags: ["media","music"] },
+  { name: "IUSTV", desc: "Student television production", tags: ["media","journalism","film"] },
+  { name: "PRSSA at IU", desc: "Public Relations Student Society", tags: ["pr","media","journalism"] },
+  { name: "Ad Club at IU", desc: "Ad portfolio and NSAC competition team", tags: ["marketing","media","design"] },
+  { name: "Cinema and Media Arts Club", desc: "Screenings, short film production", tags: ["film","media"] },
+  { name: "Game Developers Club", desc: "Game jams with Media School game design", tags: ["games","cs","media"] },
+  { name: "Sports Production Club", desc: "Live event production with sports media", tags: ["sports","media","journalism"] },
+  { name: "Singing Hoosiers", desc: "Iconic Jacobs choral ensemble", tags: ["music","voice"] },
+  { name: "Marching Hundred", desc: "IU's marching band", tags: ["music","performance"] },
+  { name: "African American Choral Ensemble", desc: "Historic IU ensemble", tags: ["music","voice"] },
+  { name: "Latin Jazz Ensemble", desc: "Jacobs jazz student ensemble", tags: ["music","jazz"] },
+  { name: "IU Ballet Theater", desc: "Pre-professional ballet performances", tags: ["dance","ballet","music"] },
+  { name: "Audio Engineering Society (IU AES)", desc: "Live sound, recording, post-production", tags: ["music","audio","tech"] },
+  { name: "Composers Forum", desc: "Student composition reading sessions", tags: ["music","composition"] },
+  { name: "IU Theatre & Drama Society", desc: "Stagings outside the BFA program", tags: ["theatre","performance"] },
+  { name: "Visual Arts Society", desc: "Eskenazi student art community", tags: ["art","design"] },
+  { name: "AIGA Student Group at IU", desc: "Graphic design portfolio and networking", tags: ["design","art","media"] },
+  { name: "Threads Magazine", desc: "Student fashion publication", tags: ["fashion","design","media"] },
+  { name: "Interior Design Society", desc: "Eskenazi interior design club", tags: ["design","art"] },
+  { name: "Architecture Student Group", desc: "Eskenazi comprehensive design club", tags: ["design","art"] },
+  { name: "Kinesiology Club", desc: "Pre-PT/OT advising and fitness research", tags: ["health","kines","bio"] },
+  { name: "Nutrition Club", desc: "Public health nutrition speakers", tags: ["health","nutrition","bio"] },
+  { name: "Public Health Association", desc: "SPH community for all PH students", tags: ["health","public"] },
+  { name: "Student Nurses Association", desc: "Nursing community and shadowing", tags: ["nursing","health"] },
+  { name: "Optometry Club", desc: "Pre-optometry advising and shadowing", tags: ["optometry","health","bio"] },
+  { name: "O'Neill Undergraduate Association", desc: "Public affairs community at O'Neill", tags: ["public","policy"] },
+  { name: "Environmental Management Association", desc: "Sustainability projects and speakers", tags: ["public","environ","sustain"] },
+  { name: "Hoosier Outdoor Society", desc: "Hiking, camping, environmental community", tags: ["environ","public"] },
+  { name: "IUDM (Dance Marathon)", desc: "Largest student philanthropy at IU — Riley Hospital", tags: ["health","public","social"] },
+  { name: "Education Student Association", desc: "Pre-service teachers community", tags: ["edu"] },
+  { name: "Student Council for Exceptional Children", desc: "Special education club", tags: ["edu","social"] },
+  { name: "Society for Linguistics Undergraduates", desc: "Phonology, syntax, fieldwork", tags: ["ling","cogsci"] },
+  { name: "Hoosiers Helping Hoosiers", desc: "Peer mentorship and tutoring", tags: ["edu","social"] },
+  { name: "International Studies Association", desc: "Hamilton Lugar undergraduate group", tags: ["intl","polisci","public"] },
+  { name: "Asian American Association", desc: "Cultural community at IU", tags: ["intl","social"] },
+  { name: "Black Student Union", desc: "Cultural and advocacy organization", tags: ["social","public"] },
+  { name: "La Casa Latino Cultural Center Programs", desc: "Latinx student programming", tags: ["intl","social"] },
+  { name: "American Marketing Association (AMA)", desc: "Marketing case competitions and recruiting", tags: ["marketing","business"] },
+  { name: "Society for Human Resource Management (SHRM)", desc: "HR student chapter", tags: ["business","hr"] },
+  { name: "Geological Society", desc: "Field trips and rockhound community", tags: ["geo","environ","science"] },
+  { name: "Anthropology Club", desc: "Archaeology and cultural anthro speakers", tags: ["anthro","history"] },
+  { name: "History Undergraduate Association", desc: "Speaker series and grad school prep", tags: ["history"] },
+  { name: "English Undergraduate Society", desc: "Creative writing and literature events", tags: ["english","writing"] },
+  { name: "Philosophy Club", desc: "Reading groups and ethics discussions", tags: ["philosophy"] },
+  { name: "Religious Studies Student Association", desc: "Comparative religion discussions", tags: ["religion","philosophy"] },
+  { name: "Social Work Student Organization", desc: "Pre-MSW community", tags: ["socialwork","public"] },
+  { name: "IU Animal Behavior Society", desc: "Behavioral biology and ethology", tags: ["bio","neuro"] },
+  { name: "Microbiology Club", desc: "Lab tours, research, IDeAS conference prep", tags: ["bio","biochem"] }
+];
+
+/* MINORS_DATA: common companion minors for each major area */
+const MINORS_DATA = {
+  cs:   ["Mathematics","Statistics","Cybersecurity","Game Design","Linguistics"],
+  info: ["Business","Psychology","Statistics","Game Design","Cybersecurity"],
+  data: ["Computer Science","Mathematics","Economics","Business"],
+  cyber:["Computer Science","Political Science","Law and Public Policy"],
+  ise:  ["Mathematics","Computer Science","Physics"],
+  business: ["Economics","Psychology","Computer Science","Spanish","Public Policy"],
+  finance: ["Mathematics","Economics","Statistics","Real Estate"],
+  marketing:["Psychology","Communication and Culture","Studio Art","Statistics"],
+  bio: ["Chemistry","Biochemistry","Psychology","Spanish"],
+  chem:["Mathematics","Biochemistry","Physics","Biology"],
+  physics:["Mathematics","Astronomy","Computer Science"],
+  math:["Statistics","Computer Science","Economics","Physics"],
+  stats:["Mathematics","Computer Science","Economics","Psychology"],
+  psych:["Sociology","Cognitive Science","Neuroscience","Statistics"],
+  neuro:["Psychology","Biology","Cognitive Science","Chemistry"],
+  cogsci:["Linguistics","Computer Science","Philosophy","Psychology"],
+  polisci:["History","Economics","International Studies","Law and Public Policy"],
+  econ:["Mathematics","Statistics","Finance","Political Science"],
+  history:["Political Science","English","Religious Studies"],
+  english:["History","Linguistics","Creative Writing","Theatre"],
+  philosophy:["Religious Studies","Cognitive Science","English"],
+  ling:["Cognitive Science","English","Computer Science","Anthropology"],
+  anthro:["History","Religious Studies","Geography"],
+  socio:["Psychology","Public Affairs","Gender Studies"],
+  geo:["Environmental Management","Geography","Geology"],
+  environ:["Sustainability","Geography","Earth Sciences","Public Policy"],
+  music:["Arts Management","Music History","Audio Engineering"],
+  composition:["Music Theory","Audio Engineering"],
+  jazz:["Music Composition","Audio Engineering"],
+  ballet:["Music","Arts Management"],
+  audio:["Music","Computer Science","Cinema and Media Arts"],
+  journalism:["Political Science","Sports Marketing","Photography"],
+  media:["Cinema and Media Arts","Marketing","Digital Art"],
+  film:["English","Cinema and Media Arts","Theatre"],
+  games:["Computer Science","Cinema and Media Arts","Studio Art"],
+  sportsmedia:["Marketing","Sports Marketing","Journalism"],
+  art:["Art History","Graphic Design","Photography"],
+  design:["Studio Art","Marketing","Computer Science"],
+  fashion:["Apparel Merchandising","Studio Art","Marketing"],
+  interior:["Studio Art","Sustainability","Architecture"],
+  comprehensive:["Sustainability","Studio Art","Real Estate"],
+  health:["Psychology","Nutrition","Public Health"],
+  kines:["Biology","Psychology","Nutrition"],
+  nutrition:["Biology","Public Health","Chemistry"],
+  publichealth:["Sociology","Biology","Statistics"],
+  nursing:["Psychology","Spanish","Public Health"],
+  optometry:["Biology","Chemistry"],
+  socialwork:["Psychology","Sociology","Public Affairs"],
+  public:["Political Science","Economics","Law and Public Policy","Statistics"],
+  edu:["Psychology","English","History","Spanish"],
+  intl:["Political Science","Foreign Language","History"],
+  spanish:["Linguistics","International Studies","Latino Studies"],
+  french:["Linguistics","International Studies","European Studies"],
+  germanic:["Linguistics","International Studies"],
+  eastasian:["International Studies","History","Linguistics"],
+  classics:["History","Philosophy","Religious Studies"],
+  religion:["History","Philosophy","Anthropology"],
+  gender:["Sociology","Psychology","English"],
+  amstudies:["History","English","Sociology"],
+  africana:["History","Sociology","English"],
+  realestate:["Finance","Sustainability","Geography"],
+  supplychain:["Operations Management","Business Analytics","Statistics"],
+  hr:["Psychology","Business Law","Sociology"],
+  entrep:["Marketing","Finance","Computer Science"],
+  consulting:["Marketing","Statistics","Business Analytics"],
+  sales:["Marketing","Psychology","Communication"],
+  accounting:["Finance","Information Systems","Business Law"],
+  intlbusiness:["Foreign Language","Economics","International Studies"]
+};
+
+/* ===== MAJORS ARRAY ===== */
+/* salaryTier: entry (<50k), mid (50-70), high (70-95), top (95k+) */
+/* Career path buckets: tech, business, healthcare, creative, research, public, media, education, law, science */
+
+const MAJORS = [
+  // ===== Luddy School of Informatics, Computing, and Engineering =====
+  { id:"cs", name:"Computer Science", college:"Luddy School of Informatics, Computing, and Engineering",
+    admission:"Direct Admit", interest:["Tech & Computing","Math & Logic"], career:["tech","research"], salaryTier:"top",
+    desc:"The deep technical CS major: algorithms, systems, AI, theory. Heavier on math and proofs than Informatics. Most flexible major for software engineering or grad school.",
+    courses:["CSCI-C 200","CSCI-C 211","CSCI-C 212","CSCI-C 241","CSCI-B 351","CSCI-P 442","CSCI-B 443","MATH-M 211"],
+    careers:["Software Engineer","Machine Learning Engineer","Backend Developer","Quant Analyst","PhD / Research"],
+    salary:"$78k–$120k starting",
+    reality:"Lots of late-night debugging. Data structures (C212) and discrete math (C241) are weed-out classes — many people switch to Informatics here. The Luddy direct admit is competitive; if you're admitted to a different school you'll need to apply internally.",
+    quote:"I came in for game dev and ended up in compilers. Be ready for the math — it's not optional even if it feels that way at first.",
+    quoteFrom:"Junior, CS + Math minor",
+    rsos:["ACM at IU","Hoosier Hackers","Women in Computing (WIC)","IUEsports"],
+    minorsKey:"cs"
+  },
+  { id:"info", name:"Informatics", college:"Luddy School of Informatics, Computing, and Engineering",
+    admission:"Direct Admit", interest:["Tech & Computing","Design"], career:["tech","business"], salaryTier:"high",
+    desc:"Computing applied to a domain — you pick a cognate (HCI, business, bioinformatics, music, security). More design and human-centered than CS, but still technical.",
+    courses:["INFO-I 101","INFO-I 201","INFO-I 211","INFO-I 300","INFO-I 308","INFO-I 400","INFO-I 427"],
+    careers:["UX Designer","Product Manager","Software Engineer","Data Analyst","IT Consultant"],
+    salary:"$65k–$95k starting",
+    reality:"Easier ramp than CS but still real coding. The cognate matters a lot — 'Informatics' alone won't impress recruiters, the focus area will. Expect group projects every semester.",
+    quote:"It's CS for people who want to actually talk to humans. The HCI cognate got me into product management before I'd graduated.",
+    quoteFrom:"Senior, Informatics (HCI cognate)",
+    rsos:["ACM at IU","Women in Computing (WIC)","IU Data Science Club"],
+    minorsKey:"info"
+  },
+  { id:"data", name:"Data Science", college:"Luddy School of Informatics, Computing, and Engineering",
+    admission:"Direct Admit", interest:["Tech & Computing","Math & Logic","Science & Research"], career:["tech","business","research"], salaryTier:"top",
+    desc:"Joint between Luddy and the College — statistics, machine learning, programming, and a domain track. Newer program but enrollment has exploded.",
+    courses:["DSCI-D 100","CSCI-C 200","STAT-S 301","CSCI-B 365","DSCI-D 590","MATH-M 211","STAT-S 432"],
+    careers:["Data Scientist","ML Engineer","Quant Researcher","Analytics Consultant","Biostatistician"],
+    salary:"$80k–$115k starting",
+    reality:"You're a stats major and a CS major at once. Linear algebra and probability are unavoidable. The job title 'data scientist' has eroded — companies want SQL + Python + cloud, so build a portfolio.",
+    quote:"Take the harder stats track if you can — it's the difference between getting interviews at Google and getting them at a regional bank.",
+    quoteFrom:"Senior, Data Science",
+    rsos:["IU Data Science Club","Statistical Association at IU","ACM at IU"],
+    minorsKey:"data"
+  },
+  { id:"cyber", name:"Cybersecurity and Global Policy", college:"Luddy School of Informatics, Computing, and Engineering",
+    admission:"Direct Admit", interest:["Tech & Computing","Public Affairs"], career:["tech","public","law"], salaryTier:"high",
+    desc:"Joint with Hamilton Lugar — half technical security (networking, crypto, secure coding), half international policy (cyber law, intelligence, geopolitics).",
+    courses:["INFO-I 231","CSCI-B 401","ISE-I 101","INTL-I 100","INFO-I 433","INFO-I 425"],
+    careers:["Security Analyst","Penetration Tester","Cyber Policy Analyst","Federal Investigator","Threat Intel"],
+    salary:"$70k–$100k starting",
+    reality:"Genuinely interdisciplinary, which means you're never the deepest in either room. Federal jobs require US citizenship and clearance. Hands-on work happens in CTFs, not class — join Hoosier Hackers early.",
+    quote:"It's perfect if you want to do policy with a technical brain. If you just want to hack things, do CS with a security minor.",
+    quoteFrom:"Junior, Cyber + Global Policy",
+    rsos:["Hoosier Hackers","ACM at IU","Model United Nations (IUMUN)"],
+    minorsKey:"cyber"
+  },
+  { id:"ise", name:"Intelligent Systems Engineering", college:"Luddy School of Informatics, Computing, and Engineering",
+    admission:"Direct Admit", interest:["Tech & Computing","Math & Logic"], career:["tech","research"], salaryTier:"top",
+    desc:"IU's engineering program — robotics, bioengineering, IoT, and computer engineering specializations. Smaller, hands-on cohort with real lab time.",
+    courses:["ENGR-E 101","ENGR-E 201","ENGR-E 311","ENGR-E 351","ENGR-E 411","MATH-M 211","PHYS-P 221"],
+    careers:["Robotics Engineer","Embedded Systems Engineer","Bioengineer","Hardware Engineer","Research Engineer"],
+    salary:"$75k–$105k starting",
+    reality:"It's an ABET-accredited engineering degree, so the workload is real — heavy math and physics on top of CS. Cohort is small (means good faculty access, fewer recruiters than at Purdue).",
+    quote:"If you want engineering at IU, this is it. You'll know your professors and your classmates by name.",
+    quoteFrom:"Senior, ISE (Robotics track)",
+    rsos:["ACM at IU","Society of Physics Students","Society of Women in Science"],
+    minorsKey:"ise"
+  },
+
+  // ===== Kelley School of Business =====
+  { id:"finance", name:"Finance", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Math & Logic"], career:["business"], salaryTier:"top",
+    desc:"The flagship Kelley major — corporate finance, investments, derivatives, valuation. Strong pipeline to Wall Street IB, asset management, and PE.",
+    courses:["BUS-F 260","BUS-F 305","BUS-F 370","BUS-F 420","BUS-F 446","BUS-A 100","BUS-G 202"],
+    careers:["Investment Banking Analyst","Equity Research","Corporate Finance","Private Equity","Wealth Management"],
+    salary:"$80k–$110k starting (NYC IB: $110k+)",
+    reality:"IB recruiting starts sophomore fall — if you don't join the Investment Banking Workshop early, you're already behind. The work is brutal hours; the prestige is real but so is the burnout.",
+    quote:"IBW is everything. If you're serious about IB, treat it like a second major from day one.",
+    quoteFrom:"Senior, Finance + Accounting",
+    rsos:["Investment Banking Workshop (IBW)","Investment Management Workshop (IMW)","Beta Alpha Psi"],
+    minorsKey:"finance"
+  },
+  { id:"accounting", name:"Accounting", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Math & Logic"], career:["business"], salaryTier:"high",
+    desc:"Kelley's most stable career path. Big 4 recruiting is heavy on campus. Many students do the 3/2 MSA program for the 150-hour CPA requirement.",
+    courses:["BUS-A 201","BUS-A 202","BUS-A 311","BUS-A 312","BUS-A 325","BUS-A 422","BUS-A 437"],
+    careers:["Big 4 Auditor","Tax Associate","Forensic Accountant","Corporate Controller","CFO Track"],
+    salary:"$60k–$80k starting; $90k+ post-CPA",
+    reality:"Considered easier coursework than finance, but the path requires the CPA, which means 150 credit hours and a brutal exam after graduation. Recruiting is structured — almost everyone has an offer by junior fall.",
+    quote:"It's not glamorous but you'll have a job. The 3/2 MSA is the move if you want Big 4.",
+    quoteFrom:"Junior, Accounting (3/2 MSA)",
+    rsos:["Beta Alpha Psi","Investment Banking Workshop (IBW)","Indiana Business Consulting (IBC)"],
+    minorsKey:"accounting"
+  },
+  { id:"marketing", name:"Marketing", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Communication"], career:["business","media"], salaryTier:"high",
+    desc:"Brand management, market research, digital marketing, sales. Kelley has a strong CPG and consumer brand pipeline (P&G, Kraft Heinz, Target).",
+    courses:["BUS-M 300","BUS-M 303","BUS-M 401","BUS-M 410","BUS-M 415","BUS-M 426","BUS-G 202"],
+    careers:["Brand Manager","Marketing Analyst","Account Manager","Digital Marketer","Consumer Insights"],
+    salary:"$58k–$80k starting",
+    reality:"Most popular Kelley major, which means competitive recruiting. Pure 'marketing' titles are getting replaced by 'growth' or 'analytics' roles — pair with Business Analytics or stats.",
+    quote:"Don't just take marketing classes. Take a coding class, an analytics class, a stats class. That's the actual job now.",
+    quoteFrom:"Senior, Marketing + Business Analytics",
+    rsos:["Kelley Marketing Club","American Marketing Association (AMA)","Ad Club at IU"],
+    minorsKey:"marketing"
+  },
+  { id:"managment", name:"Management", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Communication"], career:["business"], salaryTier:"high",
+    desc:"Organizational behavior, leadership, change management, strategy. Often paired with another Kelley major; on its own it skews toward HR or consulting.",
+    courses:["BUS-Z 302","BUS-Z 311","BUS-J 401","BUS-Z 404","BUS-Z 443"],
+    careers:["Management Consultant","Operations Manager","HR Business Partner","Project Manager","Leadership Development"],
+    salary:"$60k–$80k starting",
+    reality:"Considered a soft major within Kelley — easier classes, but recruiters want a paired hard major. By itself, it's strongest for HR or rotational programs.",
+    quote:"I do management because I do consulting too. Alone, it's not a career, it's an enabler.",
+    quoteFrom:"Senior, Management + Consulting",
+    rsos:["Indiana Business Consulting (IBC)","Society for Human Resource Management (SHRM)"],
+    minorsKey:"business"
+  },
+  { id:"banalytics", name:"Business Analytics", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Math & Logic","Tech & Computing"], career:["business","tech"], salaryTier:"top",
+    desc:"Kelley's fastest-growing major — SQL, Python, R, Tableau, statistical modeling for business decisions. The most technical Kelley major.",
+    courses:["BUS-K 201","BUS-K 303","BUS-K 304","BUS-K 353","BUS-K 460","BUS-S 307"],
+    careers:["Data Analyst","Business Intelligence Analyst","Consultant","Pricing Analyst","Marketing Analytics"],
+    salary:"$70k–$90k starting",
+    reality:"Coding-heavy by Kelley standards but light by Luddy standards. If you want to do real ML, double in Data Science or CS. The job market is hot — for now.",
+    quote:"It's a Kelley degree with a Luddy-flavored toolkit. Recruiters love it.",
+    quoteFrom:"Senior, BANA + Finance",
+    rsos:["Investment Management Workshop (IMW)","Indiana Business Consulting (IBC)","IU Data Science Club"],
+    minorsKey:"data"
+  },
+  { id:"entrep", name:"Entrepreneurship & Corporate Innovation", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Communication"], career:["business"], salaryTier:"high",
+    desc:"Building new ventures, intrapreneurship, and venture capital. Strong network through Kelley's Velocity program and Bloomington startups.",
+    courses:["BUS-W 211","BUS-W 311","BUS-W 406","BUS-W 410","BUS-W 415"],
+    careers:["Founder","VC Analyst","Product Manager","Innovation Consultant","Corporate Strategy"],
+    salary:"$60k–$95k (highly variable)",
+    reality:"You don't have to start a company, but if you don't try at least one project the major doesn't really pay off. VC roles are tough out of undergrad — most need a banking or PE step first.",
+    quote:"Pair it with finance or CS. Pure entrepreneurship without a craft is a hat on a hat.",
+    quoteFrom:"Senior, Entrepreneurship + Finance",
+    rsos:["Kelley Entrepreneurship Club","Indiana Business Consulting (IBC)"],
+    minorsKey:"entrep"
+  },
+  { id:"intlbiz", name:"International Business", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Languages & Culture"], career:["business"], salaryTier:"high",
+    desc:"Always paired as a co-major with another Kelley major. Required language proficiency and a study-abroad term. Strong global rotational pipelines.",
+    courses:["BUS-D 300","BUS-D 301","BUS-D 410","BUS-D 422"],
+    careers:["Global Rotational Programs","International Trade","Global Brand Manager","Consulate / Trade"],
+    salary:"$65k–$85k starting",
+    reality:"Always a co-major; it adds depth, not job titles. Language requirement is real — 4 semesters of college language. Worth it if you'll actually live abroad.",
+    quote:"Co-major with finance and the language pays off twice — once in interviews and again in your career.",
+    quoteFrom:"Senior, Finance + International Business + German",
+    rsos:["International Studies Association","Kelley Marketing Club"],
+    minorsKey:"intlbusiness"
+  },
+  { id:"supplychain", name:"Supply Chain Management", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Math & Logic"], career:["business"], salaryTier:"high",
+    desc:"Logistics, operations, procurement, and analytics. Kelley's SCM program is top-ranked nationally; recruiters camp on campus.",
+    courses:["BUS-P 300","BUS-P 320","BUS-P 421","BUS-P 429","BUS-K 303"],
+    careers:["Supply Chain Analyst","Operations Manager","Procurement","Logistics Coordinator","Plant Manager"],
+    salary:"$65k–$85k starting",
+    reality:"Underrated and stable. Less prestige than finance, but the recruiting hit-rate is among the highest at Kelley. Expect to live in a smaller market post-grad.",
+    quote:"Nobody talks about SCM at parties, but everyone has a job by senior fall.",
+    quoteFrom:"Senior, SCM",
+    rsos:["Supply Chain Club at Kelley","Indiana Business Consulting (IBC)"],
+    minorsKey:"supplychain"
+  },
+  { id:"realestate", name:"Real Estate", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money"], career:["business"], salaryTier:"high",
+    desc:"Real estate finance, development, brokerage, and investment. Kelley has a deep alumni base in REPE and CRE.",
+    courses:["BUS-R 305","BUS-R 443","BUS-R 478","BUS-F 305"],
+    careers:["REPE Analyst","CRE Broker","Developer","Asset Manager","Acquisitions"],
+    salary:"$65k–$95k starting",
+    reality:"Cyclical industry — hiring follows interest rates. Best paired with Finance. The Kelley Real Estate Club's events are where you'll meet recruiters.",
+    quote:"Take it seriously and you can be in NYC or Chicago doing acquisitions out of undergrad.",
+    quoteFrom:"Senior, Real Estate + Finance",
+    rsos:["Kelley Real Estate Club","Investment Banking Workshop (IBW)"],
+    minorsKey:"realestate"
+  },
+  { id:"econconsult", name:"Economic Consulting", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Math & Logic"], career:["business","research"], salaryTier:"top",
+    desc:"Newer Kelley major focused on litigation support, antitrust, and applied microeconomic consulting. Pipeline to firms like Analysis Group, Cornerstone, NERA.",
+    courses:["BUS-E 370","BUS-E 472","BUS-G 350","ECON-E 321","ECON-E 322"],
+    careers:["Economic Consultant","Litigation Analyst","Antitrust Analyst","PhD Pre-Doc"],
+    salary:"$80k–$100k starting",
+    reality:"Heavy on econometrics — basically a PhD-prep route inside Kelley. Pair with a math or stats minor. Smaller pipeline than IB, but high pay.",
+    quote:"It's the closest thing Kelley offers to grad-school-grade economics. Lean into the regression classes.",
+    quoteFrom:"Senior, Econ Consulting + Math",
+    rsos:["Investment Management Workshop (IMW)","Statistical Association at IU"],
+    minorsKey:"econ"
+  },
+  { id:"prosales", name:"Professional Sales", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Communication"], career:["business"], salaryTier:"high",
+    desc:"One of the few dedicated sales programs in the U.S. Roleplay-heavy curriculum, deep ties to enterprise software and medical device firms.",
+    courses:["BUS-M 405","BUS-M 412","BUS-M 419","BUS-Z 311"],
+    careers:["Sales Development Rep","Account Executive","Medical Device Sales","Enterprise Software Sales"],
+    salary:"$60k base + commission ($75k–$120k OTE)",
+    reality:"Income is uncapped if you're good — uncomfortable if you're not. Tech and medical device pipelines are strong. Sales has stigma you'll have to push past.",
+    quote:"Top reps make more than IB analysts, with weekends. Bottom reps wash out fast. Know which one you'll be.",
+    quoteFrom:"Senior, Sales + Marketing",
+    rsos:["Sales Club at Kelley","Kelley Marketing Club"],
+    minorsKey:"sales"
+  },
+  { id:"hr", name:"Human Resource Management", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","People & Society"], career:["business"], salaryTier:"mid",
+    desc:"Talent management, comp & benefits, organizational development, employment law. Often paired with management or psychology.",
+    courses:["BUS-Z 302","BUS-Z 441","BUS-Z 443","BUS-L 201","PSY-P 320"],
+    careers:["HR Generalist","Recruiter","Compensation Analyst","Employee Relations","HRBP"],
+    salary:"$50k–$70k starting",
+    reality:"Stable and people-facing but not the highest-paid Kelley track. Strong rotational programs (GE, Eli Lilly) reward students who pair HR with analytics.",
+    quote:"HR with no analytics is the past. HR with analytics is the future.",
+    quoteFrom:"Senior, HR + Business Analytics",
+    rsos:["Society for Human Resource Management (SHRM)"],
+    minorsKey:"hr"
+  },
+  { id:"infosys", name:"Information Systems", college:"Kelley School of Business",
+    admission:"Standard Admit (Kelley)", interest:["Business & Money","Tech & Computing"], career:["business","tech"], salaryTier:"high",
+    desc:"Business + tech bridge: ERP systems, business process design, IT consulting, product management. Less coding than Informatics, more business context.",
+    courses:["BUS-S 301","BUS-S 307","BUS-S 308","BUS-S 410","BUS-K 304"],
+    careers:["IT Consultant","Business Analyst","Product Manager","ERP Implementation","Tech PM"],
+    salary:"$70k–$90k starting",
+    reality:"Consulting recruiting is strong (Deloitte, Accenture). It's a 'glue' major — you connect business and tech but rarely build either deeply. That's fine if you like it; frustrating if you wanted CS.",
+    quote:"It's not Informatics — don't expect to be coding all day. It's the major that gets you the consulting offer.",
+    quoteFrom:"Senior, Info Systems + Marketing",
+    rsos:["Indiana Business Consulting (IBC)","ACM at IU"],
+    minorsKey:"info"
+  },
+
+  // ===== College of Arts & Sciences — Sciences =====
+  { id:"bio", name:"Biology", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Life Sciences","Health & Medicine","Science & Research"], career:["healthcare","research","science"], salaryTier:"mid",
+    desc:"Foundational life science — molecular bio, ecology, evolution, genetics. The default pre-med major (though no major is required for med school).",
+    courses:["BIOL-L 111","BIOL-L 112","BIOL-L 211","BIOL-L 311","BIOL-L 318","CHEM-C 117","CHEM-C 341"],
+    careers:["Medical School","Lab Tech","Research Scientist (PhD)","Biotech","Public Health"],
+    salary:"$40k–$55k with BS; $200k+ as MD",
+    reality:"A BS in biology alone has a soft job market — most paths require grad school (med, dental, PhD). Organic chemistry is the famous filter. Research experience matters more than GPA after a point.",
+    quote:"If you don't want grad school, biology by itself is rough. Pair it with stats, CS, or business.",
+    quoteFrom:"Senior, Biology (pre-med)",
+    rsos:["IU Pre-Med Association","Society of Women in Science","Minority Association of Pre-Medical Students (MAPS)"],
+    minorsKey:"bio"
+  },
+  { id:"biochem", name:"Biochemistry", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Life Sciences","Health & Medicine","Science & Research"], career:["research","healthcare","science"], salaryTier:"mid",
+    desc:"Biology + chemistry at the molecular level. Strongest pre-grad-school prep at IU for biotech, pharma, and biomedical PhDs.",
+    courses:["CHEM-C 117","CHEM-C 341","CHEM-C 342","BIOC-B 421","BIOC-B 423","BIOL-L 211"],
+    careers:["Biotech R&D","Pharma Research","MD/PhD","Biomedical PhD","Forensics"],
+    salary:"$50k–$65k with BS",
+    reality:"Heavier than straight biology. Lab time is non-trivial. The salary jump comes after grad school, not undergrad.",
+    quote:"The labs eat your weekends but you'll be ahead of every bio major in any biotech interview.",
+    quoteFrom:"Senior, Biochemistry",
+    rsos:["American Chemical Society (IU Chapter)","IU Pre-Med Association"],
+    minorsKey:"chem"
+  },
+  { id:"chem", name:"Chemistry", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Math & Logic"], career:["research","science","healthcare"], salaryTier:"mid",
+    desc:"Pure chemistry — organic, inorganic, physical, analytical. ACS-certified track is the standard for grad school applicants.",
+    courses:["CHEM-C 117","CHEM-C 341","CHEM-C 342","CHEM-C 360","CHEM-C 460"],
+    careers:["Chemist (Pharma/Materials)","PhD Research","Patent Examiner","Forensic Scientist","Med School"],
+    salary:"$45k–$60k with BS",
+    reality:"Job market for chem BS alone is weak — PhD is the real career. The lab work is unglamorous and slow. Best paired with bio, physics, or CS.",
+    quote:"You'll need to be fine with PhD-level commitment by senior year, or pivot. Plan it now.",
+    quoteFrom:"Senior, Chemistry (PhD-bound)",
+    rsos:["American Chemical Society (IU Chapter)","Society of Women in Science"],
+    minorsKey:"chem"
+  },
+  { id:"physics", name:"Physics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Math & Logic"], career:["research","science","tech"], salaryTier:"high",
+    desc:"Classical mechanics, electromagnetism, quantum, relativity. Tiny but elite cohort — physics majors place exceptionally well in tech and finance even without a PhD.",
+    courses:["PHYS-P 221","PHYS-P 222","PHYS-P 309","PHYS-P 331","PHYS-P 441","MATH-M 211","MATH-M 311"],
+    careers:["Quant Analyst","Software Engineer","Data Scientist","PhD Researcher","Engineering"],
+    salary:"$60k–$95k with BS",
+    reality:"The math is unrelenting. By senior year you'll either love it or have transferred. Surprisingly versatile degree — Wall Street, big tech, and grad school all open.",
+    quote:"It's the major where 'I struggled with my problem set' means it took 14 hours.",
+    quoteFrom:"Senior, Physics + CS minor",
+    rsos:["Society of Physics Students","IU Astronomy Club"],
+    minorsKey:"physics"
+  },
+  { id:"astro", name:"Astronomy & Astrophysics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Math & Logic"], career:["research","science"], salaryTier:"mid",
+    desc:"Tiny program, very close-knit. Effectively physics with applications to cosmology, stellar physics, and observation. Kirkwood Observatory access for students.",
+    courses:["AST-A 221","AST-A 222","AST-A 451","PHYS-P 221","PHYS-P 222","MATH-M 211"],
+    careers:["PhD / Research","Aerospace","Data Science","Science Communication"],
+    salary:"$50k–$80k with BS (PhD-track usually)",
+    reality:"Industry jobs called 'astronomer' barely exist; the path is PhD then academia or pivoting to data/aerospace. Beautiful subject, narrow career funnel without grad school.",
+    quote:"You're really doing physics with a poster of the Hubble. Treat the physics seriously.",
+    quoteFrom:"Senior, Astrophysics",
+    rsos:["IU Astronomy Club","Society of Physics Students"],
+    minorsKey:"physics"
+  },
+  { id:"math", name:"Mathematics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Math & Logic","Science & Research"], career:["research","tech","business"], salaryTier:"high",
+    desc:"Pure math (analysis, algebra, topology) or applied math (modeling, numerical analysis). Honors track is grad-school prep.",
+    courses:["MATH-M 211","MATH-M 212","MATH-M 311","MATH-M 343","MATH-M 403","MATH-M 413"],
+    careers:["Quant","Data Scientist","Actuary","PhD","Software Engineer"],
+    salary:"$65k–$95k with BS",
+    reality:"Fewer majors than CS or stats but extremely versatile. Real analysis (M413) is the proof-writing wall. Industry employers love it; you just have to translate the degree to them.",
+    quote:"Math + CS is the best 'I'll figure out my career later' double major IU offers.",
+    quoteFrom:"Senior, Math + CS",
+    rsos:["Math Club","Statistical Association at IU"],
+    minorsKey:"math"
+  },
+  { id:"stats", name:"Statistics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Math & Logic","Science & Research"], career:["business","research","tech"], salaryTier:"high",
+    desc:"Probability, regression, machine learning, experimental design. Increasingly the practical version of a math degree.",
+    courses:["STAT-S 301","STAT-S 320","STAT-S 425","STAT-S 432","STAT-S 470","MATH-M 311"],
+    careers:["Data Scientist","Biostatistician","Actuary","Quant","Analytics Consultant"],
+    salary:"$70k–$95k with BS",
+    reality:"Less prestige than 'data science' but often more rigorous. Pair with R/Python projects and a domain (bio, finance, sports) to stand out.",
+    quote:"Stats is data science with the math intact. Recruiters know.",
+    quoteFrom:"Senior, Statistics + CS minor",
+    rsos:["Statistical Association at IU","IU Data Science Club"],
+    minorsKey:"stats"
+  },
+  { id:"cogsci", name:"Cognitive Science", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Tech & Computing","People & Society"], career:["research","tech"], salaryTier:"mid",
+    desc:"Mind from many angles — neuroscience, AI, linguistics, philosophy, psychology. You build a focus by the end of sophomore year.",
+    courses:["COGS-Q 101","COGS-Q 240","COGS-Q 270","COGS-Q 351","CSCI-B 351","LING-L 305","PSY-P 335"],
+    careers:["UX Researcher","ML Engineer","Cognitive Researcher","Speech-Language Path. (grad)"],
+    salary:"$55k–$85k with BS",
+    reality:"Beautifully interdisciplinary, but it's on you to give it a shape. With CS, it points at AI/UX. With biology, it points at neuro/medicine. Without focus, it points nowhere.",
+    quote:"The major is what you make it. Choose your sub-field by sophomore year or you'll graduate confused.",
+    quoteFrom:"Senior, CogSci (AI track)",
+    rsos:["Cognitive Science Club","IU Neuroscience Club"],
+    minorsKey:"cogsci"
+  },
+  { id:"neuro", name:"Neuroscience", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Life Sciences","Health & Medicine","Science & Research"], career:["research","healthcare","science"], salaryTier:"mid",
+    desc:"Brain across scales — molecular, cellular, systems, behavioral. Heavy lab and pre-med-friendly.",
+    courses:["NEUS-N 200","NEUS-N 300","NEUS-N 410","BIOL-L 211","PSY-P 335","CHEM-C 341"],
+    careers:["Med School / Health Professions","Neuroscience PhD","Pharma R&D","Clinical Research"],
+    salary:"$45k–$60k with BS",
+    reality:"It's an honors-style major — selective, demanding, and basically pre-med with cooler labs. Without grad school, the pay isn't there.",
+    quote:"Neuro is biology with attention from the faculty. Take advantage of research as a freshman.",
+    quoteFrom:"Senior, Neuroscience (MD-bound)",
+    rsos:["IU Neuroscience Club","Cognitive Science Club","IU Pre-Med Association"],
+    minorsKey:"neuro"
+  },
+  { id:"micro", name:"Microbiology", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Life Sciences","Science & Research","Health & Medicine"], career:["research","healthcare","science"], salaryTier:"mid",
+    desc:"Bacteria, viruses, immunology, infectious disease. Niche but strong for pre-med and biotech.",
+    courses:["MICR-M 250","MICR-M 380","MICR-M 460","BIOL-L 311","CHEM-C 341"],
+    careers:["Lab Scientist","Public Health","Med School","Pharma QC","PhD"],
+    salary:"$45k–$60k with BS",
+    reality:"Smaller than biology — closer faculty access, fewer course options. Best for students sure about pre-med, biotech, or grad school.",
+    quote:"You'll know your professors. They'll know you. Get in a lab freshman year.",
+    quoteFrom:"Senior, Microbiology",
+    rsos:["Microbiology Club","IU Pre-Med Association"],
+    minorsKey:"bio"
+  },
+  { id:"earth", name:"Earth & Atmospheric Sciences", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Environment"], career:["science","research","public"], salaryTier:"mid",
+    desc:"Geology, meteorology, climate science, hydrology. Field-trip heavy — IU has a famous Geologic Field Station in Montana.",
+    courses:["EAS-E 105","EAS-E 113","EAS-E 200","EAS-E 343","EAS-E 411"],
+    careers:["Environmental Consultant","Petroleum/Mining","Hydrologist","Government Scientist","Climate Researcher"],
+    salary:"$50k–$70k with BS",
+    reality:"You'll spend real time outside — students love this or hate it. Energy industry roles pay well; environmental consulting is more accessible. Federal grad employment is steady.",
+    quote:"The field camp in Montana is the reason I stayed in the major.",
+    quoteFrom:"Senior, EAS",
+    rsos:["Geological Society","Hoosier Outdoor Society"],
+    minorsKey:"geo"
+  },
+  { id:"environ", name:"Environmental Science", college:"College of Arts & Sciences / O'Neill",
+    admission:"Standard Admit", interest:["Science & Research","Environment","Public Affairs"], career:["public","science","research"], salaryTier:"mid",
+    desc:"Joint program. Environmental chemistry, ecology, policy, GIS. More applied than EAS, more scientific than O'Neill's Environmental Mgmt.",
+    courses:["EAS-E 105","SPEA-E 412","BIOL-L 318","SPEA-V 348","CHEM-C 117"],
+    careers:["Environmental Consultant","Sustainability Analyst","EPA / State Agency","NGO Researcher"],
+    salary:"$50k–$70k starting",
+    reality:"Crowded job market with a lot of passion-driven candidates and modest pay. GIS skills (ArcGIS, Python) are the differentiator.",
+    quote:"Get GIS-certified. It's the difference between answering phones and doing fieldwork.",
+    quoteFrom:"Senior, Environmental Science",
+    rsos:["Environmental Management Association","Hoosier Outdoor Society"],
+    minorsKey:"environ"
+  },
+  { id:"geog", name:"Geography", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","People & Society","Environment"], career:["public","science","tech"], salaryTier:"mid",
+    desc:"Human and physical geography, GIS, urban systems, climate. The GIS specialization is the practical career path.",
+    courses:["GEOG-G 107","GEOG-G 237","GEOG-G 250","GEOG-G 338","GEOG-G 488"],
+    careers:["GIS Analyst","Urban Planner","Environmental Consultant","Cartographer","Government"],
+    salary:"$50k–$70k starting",
+    reality:"GIS skills convert directly into a job. Pure cultural geography is interesting but harder to monetize. Urban planning often needs a master's.",
+    quote:"GIS is a real, marketable skill. It's the part of the major you actually sell to employers.",
+    quoteFrom:"Senior, Geography",
+    rsos:["Geological Society","Environmental Management Association"],
+    minorsKey:"geo"
+  },
+  { id:"geology", name:"Geological Sciences", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Science & Research","Environment"], career:["science","research"], salaryTier:"mid",
+    desc:"Bedrock, plate tectonics, mineralogy, paleontology, sedimentology. Field-heavy with the IU Field Station capstone.",
+    courses:["EAS-E 113","EAS-E 222","EAS-E 351","EAS-E 415","EAS-Y 420"],
+    careers:["Geologist (Energy/Mining)","Hydrologist","Paleontologist","Government Researcher"],
+    salary:"$60k–$80k starting (energy higher)",
+    reality:"Energy and mining hire well; pay is good, but locations can be remote. Academia track is competitive. Field camp is a non-negotiable rite of passage.",
+    quote:"You'll spend a summer covered in mud. You'll either love it or quit by senior year.",
+    quoteFrom:"Senior, Geology",
+    rsos:["Geological Society","Hoosier Outdoor Society"],
+    minorsKey:"geo"
+  },
+
+  // ===== College of Arts & Sciences — Social Sciences =====
+  { id:"psych", name:"Psychology", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["People & Society","Health & Medicine","Science & Research"], career:["healthcare","research","public"], salaryTier:"mid",
+    desc:"Cognition, behavior, social, clinical, neuroscience tracks. Largest College of A&S major. BS track is more research-oriented than BA.",
+    courses:["PSY-P 101","PSY-P 102","PSY-P 211","PSY-P 304","PSY-P 320","PSY-P 335"],
+    careers:["Clinical Psychologist (PhD/PsyD)","Counselor","HR","UX Researcher","Research Asst."],
+    salary:"$40k–$55k with BS; $80k+ with grad",
+    reality:"With a BS only, jobs are limited and pay is modest. Most students need grad school for the careers they imagine. Research experience and stats matter more than GPA.",
+    quote:"Plan for grad school by sophomore year. Get into a lab freshman fall.",
+    quoteFrom:"Senior, Psychology (clinical PhD-bound)",
+    rsos:["Psi Chi (Psychology Honor Society)","IU Neuroscience Club","Cognitive Science Club"],
+    minorsKey:"psych"
+  },
+  { id:"socio", name:"Sociology", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["People & Society","Public Affairs"], career:["public","research"], salaryTier:"mid",
+    desc:"Inequality, race/ethnicity, gender, family, criminology, organizations. Quantitative track for stats-leaning students.",
+    courses:["SOC-S 100","SOC-S 217","SOC-S 320","SOC-S 410","SOC-S 460"],
+    careers:["Nonprofit","HR","Government Research","Pre-Law","PhD"],
+    salary:"$42k–$58k starting",
+    reality:"Strong major for thinking about institutions, weaker for direct job pipelines. Best paired with stats, public affairs, or law school plans.",
+    quote:"It taught me how systems actually work. But pair it with stats or a minor that pays.",
+    quoteFrom:"Senior, Sociology",
+    rsos:["IU Political and Civic Engagement Club","Social Work Student Organization"],
+    minorsKey:"socio"
+  },
+  { id:"anthro", name:"Anthropology", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["People & Society","Languages & Culture","Science & Research"], career:["research","public"], salaryTier:"mid",
+    desc:"Four-field anthropology — cultural, biological, linguistic, archaeological. IU's archaeology program runs digs students can join.",
+    courses:["ANTH-A 105","ANTH-A 200","ANTH-B 200","ANTH-L 200","ANTH-A 380"],
+    careers:["Cultural Resource Mgmt","Museum","UX Researcher","NGO","PhD"],
+    salary:"$40k–$58k starting",
+    reality:"Direct anthro jobs are rare without a master's. UX and tech ethnography is a growing path. Archaeology has steady contract work but modest pay.",
+    quote:"The bio anthro and archaeology tracks are where the actual jobs hide.",
+    quoteFrom:"Senior, Anthropology (Bio track)",
+    rsos:["Anthropology Club"],
+    minorsKey:"anthro"
+  },
+  { id:"polisci", name:"Political Science", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Public Affairs","People & Society"], career:["public","law","research"], salaryTier:"mid",
+    desc:"American politics, comparative politics, international relations, political theory, methods. Common pre-law major.",
+    courses:["POLS-Y 103","POLS-Y 105","POLS-Y 200","POLS-Y 205","POLS-Y 339","POLS-Y 489"],
+    careers:["Legislative Aide","Pre-Law","Campaign / Political Consulting","Foreign Service","Federal Govt"],
+    salary:"$45k–$65k starting",
+    reality:"Strong gateway to law school. By itself it's a generalist degree — internships matter much more than the major. Methods classes (statistics) help recruiting more than theory.",
+    quote:"DC internships are non-negotiable. The major opens doors; the internship walks you through them.",
+    quoteFrom:"Senior, Political Science (pre-law)",
+    rsos:["Model United Nations (IUMUN)","IU Political and Civic Engagement Club","Pre-Law Society"],
+    minorsKey:"polisci"
+  },
+  { id:"econ", name:"Economics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Business & Money","Math & Logic"], career:["business","research","public"], salaryTier:"high",
+    desc:"Micro, macro, econometrics, applied fields. Note this is NOT the Kelley business econ — it's College, more theory and math.",
+    courses:["ECON-E 201","ECON-E 202","ECON-E 321","ECON-E 322","ECON-E 470"],
+    careers:["Economic Consulting","Banking","Federal Reserve","Policy","PhD"],
+    salary:"$60k–$85k starting",
+    reality:"Without Kelley, you don't get the same banking pipeline — but with strong econometrics + an internship, you can compete. The math track separates serious students.",
+    quote:"Take real analysis and a stats sequence. That's what gets you into top consulting and PhD programs.",
+    quoteFrom:"Senior, Economics + Math",
+    rsos:["Statistical Association at IU","Investment Management Workshop (IMW)"],
+    minorsKey:"econ"
+  },
+  { id:"history", name:"History", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","People & Society"], career:["research","public","education"], salaryTier:"mid",
+    desc:"Research, archives, narrative writing, regional concentrations. Common pre-law and pre-grad major.",
+    courses:["HIST-H 220","HIST-H 217","HIST-H 425","HIST-J 300","HIST-H 495"],
+    careers:["Pre-Law","Teaching","Archives / Museums","Federal Government","PhD"],
+    salary:"$42k–$60k starting",
+    reality:"You'll write a lot. The major teaches research and synthesis at a high level — those skills convert. Direct 'historian' jobs are scarce; law and government are common pivots.",
+    quote:"It's a writing degree disguised as a content degree. That writing got me a federal job.",
+    quoteFrom:"Senior, History (pre-law)",
+    rsos:["History Undergraduate Association","Pre-Law Society"],
+    minorsKey:"history"
+  },
+  { id:"english", name:"English", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","Communication"], career:["media","public","education","creative"], salaryTier:"mid",
+    desc:"Literature, creative writing, film, professional writing. The creative writing track has competitive workshops.",
+    courses:["ENG-L 202","ENG-L 220","ENG-L 305","ENG-L 371","ENG-W 301","ENG-W 401"],
+    careers:["Editor","Marketing","Pre-Law","Teaching","MFA","Tech Writer"],
+    salary:"$42k–$58k starting",
+    reality:"The 'what will you do with that' major. Writing at a high level translates well — but you have to translate it. Add a marketing, CS, or business minor to broaden options.",
+    quote:"Pair English with anything practical. The writing skill is real; the degree alone is too quiet.",
+    quoteFrom:"Senior, English + Marketing minor",
+    rsos:["English Undergraduate Society","Indiana Daily Student"],
+    minorsKey:"english"
+  },
+  { id:"phil", name:"Philosophy", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","Math & Logic"], career:["law","research","public"], salaryTier:"mid",
+    desc:"Logic, ethics, metaphysics, philosophy of mind, history of philosophy. Famous for top LSAT averages.",
+    courses:["PHIL-P 100","PHIL-P 105","PHIL-P 250","PHIL-P 343","PHIL-P 360","PHIL-P 414"],
+    careers:["Law","Policy","Tech Ethics","PhD","Consulting"],
+    salary:"$48k–$70k starting",
+    reality:"Tiny cohort, demanding writing, and one of the best LSAT tracks of any major. Outside law, you'll need to translate the degree.",
+    quote:"Philosophy + CS is one of the most underrated double majors at IU.",
+    quoteFrom:"Senior, Philosophy + CS",
+    rsos:["Philosophy Club","Pre-Law Society"],
+    minorsKey:"philosophy"
+  },
+  { id:"religion", name:"Religious Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","People & Society"], career:["research","public","education"], salaryTier:"mid",
+    desc:"Comparative religion, history of religious traditions, ethics, social impact. Strong in textual and area studies.",
+    courses:["REL-R 152","REL-R 153","REL-R 220","REL-R 327","REL-R 450"],
+    careers:["Nonprofit","Pre-Law","Education","Chaplaincy","PhD"],
+    salary:"$42k–$58k starting",
+    reality:"Niche but genuinely interdisciplinary. By itself it doesn't lead to a clear job — pair it with public affairs, a language, or grad school plans.",
+    quote:"It's an excellent companion major. As a sole degree it's narrow.",
+    quoteFrom:"Senior, Religious Studies + Political Science",
+    rsos:["Religious Studies Student Association","Philosophy Club"],
+    minorsKey:"religion"
+  },
+  { id:"ling", name:"Linguistics", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","Science & Research","Tech & Computing"], career:["research","tech"], salaryTier:"mid",
+    desc:"Phonology, syntax, morphology, semantics, sociolinguistics, computational linguistics. Computational track pairs naturally with CS.",
+    courses:["LING-L 103","LING-L 203","LING-L 305","LING-L 310","LING-L 432","LING-L 545"],
+    careers:["Computational Linguist","NLP Engineer","Speech Pathology (grad)","Forensic Linguist","Translator"],
+    salary:"$50k–$85k with BS",
+    reality:"The computational track + CS minor is one of the most underrated paths to NLP/AI jobs. Pure linguistics tends toward grad school.",
+    quote:"If you're at all interested, take Q121 (intro CS) freshman fall. Computational linguistics is where the jobs are.",
+    quoteFrom:"Senior, Linguistics + CS minor",
+    rsos:["Society for Linguistics Undergraduates","Cognitive Science Club"],
+    minorsKey:"ling"
+  },
+  { id:"gender", name:"Gender Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["People & Society","Languages & Culture"], career:["public","research"], salaryTier:"mid",
+    desc:"Theory, history, and politics of gender, sexuality, and embodiment. Strong analytical and writing emphasis.",
+    courses:["GNDR-G 101","GNDR-G 205","GNDR-G 310","GNDR-G 400","SOC-S 338"],
+    careers:["Nonprofit / Advocacy","Public Health","Policy","Pre-Law","PhD"],
+    salary:"$42k–$58k starting",
+    reality:"Politicized perception aside, the major is rigorous. Career pipelines are strongest in advocacy, policy, public health — pair it with one of those for clarity.",
+    quote:"Pair it with public health, policy, or law school plans. The major is sharper as a co-major.",
+    quoteFrom:"Senior, Gender Studies + Public Health",
+    rsos:["IU Political and Civic Engagement Club","Hoosiers for Humanity (Habitat)"],
+    minorsKey:"gender"
+  },
+  { id:"africana", name:"African American & African Diaspora Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","People & Society"], career:["public","research","education"], salaryTier:"mid",
+    desc:"History, literature, music, and politics of the African diaspora. Hosts one of the oldest such departments in the nation.",
+    courses:["AAAD-A 150","AAAD-A 210","AAAD-A 350","AAAD-A 405"],
+    careers:["Education","Nonprofit","Policy","Pre-Law","PhD"],
+    salary:"$42k–$58k starting",
+    reality:"Strong departmental community and faculty. Direct career path requires pairing with a professional track (law, education, policy).",
+    quote:"The community in the department is the reason to come. The career path you build alongside.",
+    quoteFrom:"Senior, AAAD + Education",
+    rsos:["Black Student Union","African American Choral Ensemble"],
+    minorsKey:"africana"
+  },
+  { id:"amst", name:"American Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture","People & Society"], career:["public","research"], salaryTier:"mid",
+    desc:"Interdisciplinary study of US culture and society — literature, media, race, politics, popular culture.",
+    courses:["AMST-A 100","AMST-A 200","AMST-A 350","AMST-A 398"],
+    careers:["Journalism","Education","Pre-Law","Museum / Cultural","Government"],
+    salary:"$42k–$58k starting",
+    reality:"Highly customizable. That flexibility is the strength and the weakness — you have to define your focus or you'll graduate diffuse.",
+    quote:"Pick a thread by sophomore year — race & media, or politics, or literature — and build everything around it.",
+    quoteFrom:"Senior, American Studies",
+    rsos:["History Undergraduate Association"],
+    minorsKey:"amstudies"
+  },
+  { id:"eastasian", name:"East Asian Languages & Cultures", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["public","education","research"], salaryTier:"mid",
+    desc:"Mandarin, Japanese, Korean — language plus literature, history, film, and politics. IU has one of the strongest programs in the U.S.",
+    courses:["EALC-C 101","EALC-J 101","EALC-K 101","EALC-E 232","EALC-E 333"],
+    careers:["Foreign Service","Translation","International Business","Education","PhD"],
+    salary:"$48k–$72k starting (depends heavily on fluency)",
+    reality:"Languages take years and humility. Useful career-wise only if you reach real fluency. Combine with international studies, business, or law.",
+    quote:"Live in country if you can. Two years abroad changes everything.",
+    quoteFrom:"Senior, East Asian (Japanese)",
+    rsos:["Asian American Association","International Studies Association"],
+    minorsKey:"eastasian"
+  },
+  { id:"french", name:"French", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["education","public","research"], salaryTier:"mid",
+    desc:"French language, literature, francophone studies (Quebec, West Africa, Caribbean). Pairs with international business or pre-med.",
+    courses:["FRIT-F 200","FRIT-F 300","FRIT-F 313","FRIT-F 402"],
+    careers:["Translation","Education","International Business","Foreign Service"],
+    salary:"$45k–$65k starting",
+    reality:"Pairs better than it stands alone — language fluency multiplies another major's value. Study abroad is essentially required.",
+    quote:"Take it for the abroad year. Take something else for the career.",
+    quoteFrom:"Senior, French + International Business",
+    rsos:["International Studies Association"],
+    minorsKey:"french"
+  },
+  { id:"spanish", name:"Spanish", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["education","public","healthcare"], salaryTier:"mid",
+    desc:"Iberian and Latin American literature, linguistics, culture. The most-employable language at IU because of US labor market demand.",
+    courses:["HISP-S 200","HISP-S 280","HISP-S 326","HISP-S 408","HISP-S 470"],
+    careers:["Bilingual Roles","Healthcare","Education","Translation","Foreign Service"],
+    salary:"$45k–$65k starting",
+    reality:"Doubles incredibly well with nursing, public health, education, social work — anywhere bilingual fluency is paid.",
+    quote:"It pairs with anything at IU. Spanish + nursing is a job by senior fall.",
+    quoteFrom:"Senior, Nursing + Spanish minor",
+    rsos:["La Casa Latino Cultural Center Programs","International Studies Association"],
+    minorsKey:"spanish"
+  },
+  { id:"germanic", name:"Germanic Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["public","education","research"], salaryTier:"mid",
+    desc:"German, Yiddish, Dutch, Scandinavian languages and literatures. Strong study abroad in Vienna and Hamburg.",
+    courses:["GER-G 200","GER-G 305","GER-G 363","GER-G 425"],
+    careers:["International Business","Translation","Foreign Service","Education","PhD"],
+    salary:"$48k–$70k starting",
+    reality:"Germanic-fluent grads are quietly in demand for European MNCs. Like other languages, value comes from fluency, not from the diploma alone.",
+    quote:"Study abroad in Hamburg. The major is built around it being a year, not a semester.",
+    quoteFrom:"Senior, Germanic Studies + Finance",
+    rsos:["International Studies Association"],
+    minorsKey:"germanic"
+  },
+  { id:"classics", name:"Classical Studies", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["research","education","law"], salaryTier:"mid",
+    desc:"Greek, Latin, ancient Mediterranean literature and history. Famous as a quiet pre-law and pre-grad incubator.",
+    courses:["CLAS-C 205","CLAS-G 100","CLAS-L 100","CLAS-C 310","CLAS-C 419"],
+    careers:["Pre-Law","Education","PhD","Editing","Museum"],
+    salary:"$45k–$65k starting",
+    reality:"Tiny, rigorous, and strangely employable through law and grad school. Latin grammar is its own gym.",
+    quote:"Classics + Philosophy is the LSAT cheat code that nobody talks about.",
+    quoteFrom:"Senior, Classics (pre-law)",
+    rsos:["Pre-Law Society","Philosophy Club"],
+    minorsKey:"classics"
+  },
+  { id:"complit", name:"Comparative Literature", college:"College of Arts & Sciences",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["research","education","creative"], salaryTier:"mid",
+    desc:"Literature across languages and traditions. Requires reading in at least one non-English language.",
+    courses:["CMLT-C 110","CMLT-C 219","CMLT-C 301","CMLT-C 405"],
+    careers:["Editing","Teaching","Translation","PhD","Cultural Nonprofits"],
+    salary:"$42k–$60k starting",
+    reality:"The literary major's literary major. Best for students seriously considering grad school or who already love a foreign language.",
+    quote:"You'll read more than English majors and in more languages. Be ready.",
+    quoteFrom:"Senior, Comparative Literature",
+    rsos:["English Undergraduate Society","International Studies Association"],
+    minorsKey:"english"
+  },
+
+  // ===== Jacobs School of Music =====
+  { id:"musicperf", name:"Music Performance", college:"Jacobs School of Music",
+    admission:"Audition Required", interest:["Arts & Performance","Music"], career:["creative"], salaryTier:"mid",
+    desc:"Instrumental or vocal performance at one of the top music schools in the world. Studio-based with a primary teacher.",
+    courses:["MUS-T 151","MUS-T 152","MUS-M 174","MUS-X 70 (lessons)","MUS-X 040 (Recital Attendance)"],
+    careers:["Orchestra Musician","Studio / Freelance","Teaching Artist","Graduate School"],
+    salary:"Varies wildly: $20k–$80k+ early-career",
+    reality:"Jacobs is elite — admission is by audition and the bar is global. The path requires extreme practice (4+ hrs/day), competitive auditions, and most often a master's degree. Income is patched together, especially early.",
+    quote:"You don't choose this — it chooses you. If anything else makes you happy, do that.",
+    quoteFrom:"Senior, Violin Performance",
+    rsos:["Singing Hoosiers","Marching Hundred","Latin Jazz Ensemble"],
+    minorsKey:"music"
+  },
+  { id:"musiced", name:"Music Education", college:"Jacobs School of Music",
+    admission:"Audition + Education Admit", interest:["Arts & Performance","Music","Education"], career:["education","creative"], salaryTier:"mid",
+    desc:"K-12 music teacher licensure track. Combines Jacobs performance training with the School of Education's licensure curriculum.",
+    courses:["MUS-T 151","MUS-E 130","MUS-E 303","MUS-E 410","EDUC-M 300"],
+    careers:["K-12 Music Teacher","Choral Director","Band Director","Orchestra Director"],
+    salary:"$42k–$55k starting (varies by state)",
+    reality:"It's two majors of work. You'll student-teach a full semester. Job market for music teachers is steady and stable, but pay tracks teacher salaries.",
+    quote:"It's a calling. The hours are real, the pay is teacher-pay. Worth it if you mean it.",
+    quoteFrom:"Senior, Music Education (Choral)",
+    rsos:["Singing Hoosiers","Education Student Association","Marching Hundred"],
+    minorsKey:"music"
+  },
+  { id:"musiccomp", name:"Music Composition", college:"Jacobs School of Music",
+    admission:"Audition + Portfolio", interest:["Arts & Performance","Music"], career:["creative","research"], salaryTier:"mid",
+    desc:"Concert music composition with regular reading sessions of student work. Strong faculty in tonal and contemporary idioms.",
+    courses:["MUS-Z 311","MUS-Z 312","MUS-T 351","MUS-T 426","MUS-M 174"],
+    careers:["Composer","Film/Game Composer","Teaching Artist","PhD","Music Software"],
+    salary:"$30k–$70k early career (variable)",
+    reality:"You'll write a lot, hear it played, and learn how it actually sounds. Concert music careers usually go through a doctorate. Film/game crossovers are growing.",
+    quote:"Hearing your piece read by Jacobs musicians twice a year is the experience.",
+    quoteFrom:"Senior, Composition",
+    rsos:["Composers Forum","Audio Engineering Society (IU AES)"],
+    minorsKey:"composition"
+  },
+  { id:"musictheory", name:"Music Theory", college:"Jacobs School of Music",
+    admission:"Audition + Theory placement", interest:["Arts & Performance","Music","Math & Logic"], career:["research","education","creative"], salaryTier:"mid",
+    desc:"Analysis, harmony, counterpoint, and history of theoretical thought. Tiny but serious cohort with a PhD-track feel.",
+    courses:["MUS-T 351","MUS-T 401","MUS-T 412","MUS-T 425"],
+    careers:["PhD","College Teaching","Music Editor","Music Software"],
+    salary:"$35k–$60k early career",
+    reality:"Effectively a pre-PhD track. Expect to teach undergrads at theory tutoring and to write a thesis. Job market without doctorate is thin.",
+    quote:"It's the major that makes you weirdly good at math by accident.",
+    quoteFrom:"Senior, Music Theory",
+    rsos:["Composers Forum","Singing Hoosiers"],
+    minorsKey:"composition"
+  },
+  { id:"jazz", name:"Jazz Studies", college:"Jacobs School of Music",
+    admission:"Audition Required", interest:["Arts & Performance","Music"], career:["creative","education"], salaryTier:"mid",
+    desc:"Jazz performance and composition with David Baker / Pat Harbison legacy. Combo work, big band, and weekly performances.",
+    courses:["MUS-Z 211","MUS-Z 311","MUS-T 151","MUS-X 70 (lessons)"],
+    careers:["Touring Musician","Studio Musician","Educator","Composer"],
+    salary:"$25k–$70k early career (variable)",
+    reality:"Jacobs jazz is legendary, with a tight-knit faculty. Career income is patchwork like most performance majors. You build a brand on top of the chops.",
+    quote:"You'll play more here than anywhere. Take it.",
+    quoteFrom:"Senior, Jazz Studies (saxophone)",
+    rsos:["Latin Jazz Ensemble","Audio Engineering Society (IU AES)"],
+    minorsKey:"jazz"
+  },
+  { id:"audio", name:"Audio Engineering & Sound Production", college:"Jacobs School of Music",
+    admission:"Audition + Application", interest:["Arts & Performance","Music","Tech & Computing"], career:["creative","tech"], salaryTier:"mid",
+    desc:"Recording engineering, live sound, post-production, and acoustics. One of the only programs of its kind embedded inside a top-tier music school.",
+    courses:["MUS-A 110","MUS-A 220","MUS-A 320","MUS-A 410","CSCI-A 110"],
+    careers:["Recording Engineer","Mix Engineer","Live Sound","Game Audio","Broadcast"],
+    salary:"$45k–$75k starting",
+    reality:"Very competitive entry to the program. The field has too many junior engineers — you survive by combining tech skills (Pro Tools, mixing) with people skills (artists trust you).",
+    quote:"Half craft, half hustle. Build a portfolio of mixes you're proud of.",
+    quoteFrom:"Senior, Audio Engineering",
+    rsos:["Audio Engineering Society (IU AES)","Composers Forum"],
+    minorsKey:"audio"
+  },
+  { id:"ballet", name:"Ballet", college:"Jacobs School of Music",
+    admission:"Audition Required", interest:["Arts & Performance"], career:["creative","education"], salaryTier:"mid",
+    desc:"Pre-professional ballet program inside a music school — rare combo. Daily technique, partnering, modern, and major productions.",
+    courses:["MUS-G 121","MUS-G 124","MUS-G 250","MUS-G 410"],
+    careers:["Professional Dancer","Ballet Master","Choreographer","Dance Educator"],
+    salary:"$25k–$55k early career",
+    reality:"Dancer careers are short and physically punishing. Most students audition for companies senior year. Strong network helps but injuries determine paths.",
+    quote:"Treat your body like the instrument it is. The career is short; the love is long.",
+    quoteFrom:"Senior, Ballet",
+    rsos:["IU Ballet Theater"],
+    minorsKey:"ballet"
+  },
+
+  // ===== The Media School =====
+  { id:"journalism", name:"Journalism", college:"The Media School",
+    admission:"Standard Admit", interest:["Communication","Public Affairs"], career:["media"], salaryTier:"mid",
+    desc:"Reporting, multimedia, investigative, sports, and broadcast. Indiana Daily Student is one of the top student papers in the U.S.",
+    courses:["MSCH-C 101","MSCH-J 110","MSCH-J 200","MSCH-J 300","MSCH-J 410","MSCH-J 460"],
+    careers:["Reporter","Editor","Producer","Communications","PR"],
+    salary:"$38k–$55k starting",
+    reality:"Industry is shrinking and pay is rough early on, especially in print. The IDS is your portfolio engine — start freelancing freshman year. Sports and digital have stronger pipelines.",
+    quote:"The IDS taught me more than any class. Show up freshman week.",
+    quoteFrom:"Senior, Journalism",
+    rsos:["Indiana Daily Student","WIUX Radio","IUSTV"],
+    minorsKey:"journalism"
+  },
+  { id:"media", name:"Media", college:"The Media School",
+    admission:"Standard Admit", interest:["Communication","Arts & Performance"], career:["media","creative"], salaryTier:"mid",
+    desc:"Umbrella major with concentrations in cinema, production, design, advertising/PR, and game studies. Pick your concentration sophomore year.",
+    courses:["MSCH-C 101","MSCH-P 215","MSCH-A 320","MSCH-C 313","MSCH-X 200"],
+    careers:["Producer","Marketing","PR","Creative Strategist","Content Creator"],
+    salary:"$42k–$60k starting",
+    reality:"Concentration matters way more than the major label. 'Media' alone reads as vague to recruiters; 'Cinema and Media Arts' or 'Advertising' tells a story.",
+    quote:"Pick the concentration early. It's not optional, it's everything.",
+    quoteFrom:"Senior, Media (Advertising concentration)",
+    rsos:["Cinema and Media Arts Club","Ad Club at IU","PRSSA at IU"],
+    minorsKey:"media"
+  },
+  { id:"games", name:"Game Design", college:"The Media School / Luddy",
+    admission:"Standard Admit", interest:["Tech & Computing","Arts & Performance"], career:["creative","tech"], salaryTier:"high",
+    desc:"Joint program — narrative, mechanics, level design, and production. Pair with Informatics or CS for engineering, or Studio Art for art roles.",
+    courses:["MSCH-G 220","MSCH-G 320","MSCH-G 420","INFO-I 343","CSCI-A 240"],
+    careers:["Game Designer","Producer","Narrative Designer","UX Designer","Indie Dev"],
+    salary:"$60k–$85k starting (game industry pays under tech)",
+    reality:"You will not get hired as a 'game designer' from undergrad without a portfolio of shipped games. Pair it with a craft (CS, art, writing) and ship something every semester.",
+    quote:"Ship things. Hire-able portfolios beat grades every time.",
+    quoteFrom:"Senior, Game Design + CS",
+    rsos:["Game Developers Club","IUEsports"],
+    minorsKey:"games"
+  },
+  { id:"sportsmedia", name:"Sports Media", college:"The Media School",
+    admission:"Standard Admit", interest:["Communication","Arts & Performance"], career:["media"], salaryTier:"mid",
+    desc:"One of the only dedicated sports media majors. Production, reporting, analytics, and management for sports media organizations.",
+    courses:["MSCH-S 200","MSCH-S 320","MSCH-S 420","MSCH-J 200"],
+    careers:["Sports Reporter","Producer","Sports Marketing","Team Communications","Broadcast Production"],
+    salary:"$38k–$55k starting",
+    reality:"Niche-but-real industry. Internships at IU Athletics, Big Ten Network, ESPN are critical. Pay starts low but career trajectory is strong if you stick.",
+    quote:"Get on a sideline by sophomore year. The reps are the major.",
+    quoteFrom:"Senior, Sports Media",
+    rsos:["Sports Production Club","IUSTV"],
+    minorsKey:"sportsmedia"
+  },
+
+  // ===== School of Public Health =====
+  { id:"kines", name:"Kinesiology", college:"School of Public Health",
+    admission:"Standard Admit", interest:["Health & Medicine","Life Sciences"], career:["healthcare"], salaryTier:"mid",
+    desc:"Movement, exercise physiology, biomechanics, motor learning. Pre-PT, pre-OT, pre-med, and athletic training tracks.",
+    courses:["KINS-K 200","KINS-P 295","KINS-K 391","KINS-K 405","BIOL-N 261"],
+    careers:["Physical Therapist (DPT)","Occupational Therapist","Athletic Trainer","Strength Coach"],
+    salary:"$42k–$60k with BS; $85k+ with DPT",
+    reality:"BS by itself opens fitness/strength jobs. The career-path versions of this major all require grad school (DPT, OT, PA, MD).",
+    quote:"Decide if you're going to grad school by sophomore year. The undergrad alone is gym pay.",
+    quoteFrom:"Senior, Kinesiology (pre-DPT)",
+    rsos:["Kinesiology Club","IU Pre-Med Association"],
+    minorsKey:"kines"
+  },
+  { id:"pubhealth", name:"Public Health", college:"School of Public Health",
+    admission:"Standard Admit", interest:["Health & Medicine","Public Affairs"], career:["healthcare","public"], salaryTier:"mid",
+    desc:"Epidemiology, biostatistics, community health, environmental health, health policy. The MPH track is a common destination.",
+    courses:["SPH-B 150","SPH-B 366","SPH-E 350","SPH-X 320","STAT-S 301"],
+    careers:["Health Educator","Epidemiologist (MPH)","Public Health Analyst","Federal Health Agencies","Med School"],
+    salary:"$45k–$60k starting; $70k+ with MPH",
+    reality:"BS in PH is a stepping stone — most career roles want an MPH. Stats and writing skills are the differentiators.",
+    quote:"Pair it with stats and Spanish. That trio is hireable.",
+    quoteFrom:"Senior, Public Health + Statistics minor",
+    rsos:["Public Health Association","IUDM (Dance Marathon)"],
+    minorsKey:"publichealth"
+  },
+  { id:"nutrition", name:"Nutrition Science", college:"School of Public Health",
+    admission:"Standard Admit", interest:["Health & Medicine","Life Sciences"], career:["healthcare","science"], salaryTier:"mid",
+    desc:"Biochemistry of nutrition, metabolism, dietetics. Path to the Registered Dietitian credential or pre-med.",
+    courses:["SPH-N 220","SPH-N 320","SPH-N 420","CHEM-C 117","BIOL-N 261"],
+    careers:["Dietitian (RDN)","Clinical Nutrition","Public Health","Pre-Med","Food Industry"],
+    salary:"$48k–$65k with RDN",
+    reality:"Becoming an RDN now requires a master's after 2024 changes. Plan for grad school. The job market is stable but pay is moderate.",
+    quote:"It's a science major in disguise. Don't underestimate the chem.",
+    quoteFrom:"Senior, Nutrition Science (pre-RDN)",
+    rsos:["Nutrition Club","Public Health Association"],
+    minorsKey:"nutrition"
+  },
+  { id:"recreation", name:"Recreation, Park & Tourism Studies", college:"School of Public Health",
+    admission:"Standard Admit", interest:["People & Society","Environment"], career:["public","business"], salaryTier:"mid",
+    desc:"Recreation programming, tourism management, parks administration, event management.",
+    courses:["SPH-R 271","SPH-R 273","SPH-R 374","SPH-R 471"],
+    careers:["Parks & Recreation","Event Manager","Tourism Marketing","Outdoor Education","Camp Director"],
+    salary:"$40k–$55k starting",
+    reality:"Underrated for students who actually want to work outside. Federal park jobs (NPS) are competitive. Tourism management has stronger private-sector pay.",
+    quote:"It's the major for people who already know they want to run a state park or a resort.",
+    quoteFrom:"Senior, Rec/Parks/Tourism",
+    rsos:["Hoosier Outdoor Society","Environmental Management Association"],
+    minorsKey:"public"
+  },
+  { id:"applhealth", name:"Applied Health Science", college:"School of Public Health",
+    admission:"Standard Admit", interest:["Health & Medicine","People & Society"], career:["healthcare","public"], salaryTier:"mid",
+    desc:"Behavioral health, family health, health promotion. Often a pre-med, pre-PA, or community health track.",
+    courses:["SPH-H 263","SPH-H 318","SPH-H 408","SPH-H 411"],
+    careers:["Community Health Worker","Health Educator","Pre-PA / Pre-Med","Patient Advocate"],
+    salary:"$42k–$58k starting",
+    reality:"Versatile pre-health major with lighter chemistry than biology. For clinical careers, you'll still need grad/professional school.",
+    quote:"It's the pre-PA major if you don't love organic chem.",
+    quoteFrom:"Senior, Applied Health Science (pre-PA)",
+    rsos:["Public Health Association","IU Pre-Med Association"],
+    minorsKey:"health"
+  },
+  { id:"exercise", name:"Exercise Science", college:"School of Public Health",
+    admission:"Standard Admit", interest:["Health & Medicine","Life Sciences"], career:["healthcare"], salaryTier:"mid",
+    desc:"Hard-science track within kinesiology — exercise physiology, biomechanics, cardiopulmonary. Strong pre-PT/PA prep.",
+    courses:["KINS-K 391","KINS-K 405","KINS-K 460","BIOL-N 261","CHEM-C 117"],
+    careers:["DPT / OT / PA / MD","Strength & Conditioning","Cardiac Rehab","Research"],
+    salary:"$45k–$60k with BS; $90k+ with DPT/PA",
+    reality:"Closer to a real biology major than kinesiology. Plan grad school early. Good labs.",
+    quote:"Take it seriously and it preps you for any clinical doctorate.",
+    quoteFrom:"Senior, Exercise Science (pre-PT)",
+    rsos:["Kinesiology Club","IU Pre-Med Association"],
+    minorsKey:"kines"
+  },
+
+  // ===== O'Neill School =====
+  { id:"pubaff", name:"Public Affairs", college:"O'Neill School of Public & Environmental Affairs",
+    admission:"Standard Admit", interest:["Public Affairs","People & Society"], career:["public","law"], salaryTier:"mid",
+    desc:"Policy analysis, government, nonprofit management, public budgeting. O'Neill is consistently top-ranked among public affairs schools.",
+    courses:["SPEA-V 161","SPEA-V 264","SPEA-V 372","SPEA-V 450","ECON-E 201"],
+    careers:["Policy Analyst","Federal Government","City / State Government","Nonprofit Director","Pre-Law"],
+    salary:"$48k–$68k starting",
+    reality:"Real, applied, and surprisingly quantitative — you'll do stats and budgeting. Pay isn't private-sector but stability is high. DC internships are huge.",
+    quote:"O'Neill is the unsung gem of IU. The internships beat most majors.",
+    quoteFrom:"Senior, Public Affairs",
+    rsos:["O'Neill Undergraduate Association","Model United Nations (IUMUN)","Pre-Law Society"],
+    minorsKey:"public"
+  },
+  { id:"envmgmt", name:"Environmental Management", college:"O'Neill School of Public & Environmental Affairs",
+    admission:"Standard Admit", interest:["Environment","Public Affairs","Science & Research"], career:["public","science"], salaryTier:"mid",
+    desc:"Environmental policy, sustainability, environmental economics, GIS, and law. Practitioner-focused complement to Environmental Science.",
+    courses:["SPEA-V 161","SPEA-V 348","SPEA-E 412","SPEA-E 442","ECON-E 201"],
+    careers:["Sustainability Analyst","Environmental Consultant","Government","Corporate ESG","Nonprofit"],
+    salary:"$50k–$70k starting",
+    reality:"More policy than science — pair with environmental science or GIS for technical depth. Corporate ESG roles have grown fast.",
+    quote:"Get GIS on top of it. That combination is what corporates pay for.",
+    quoteFrom:"Senior, Environmental Mgmt + GIS cert",
+    rsos:["Environmental Management Association","Hoosier Outdoor Society"],
+    minorsKey:"environ"
+  },
+  { id:"healthmgmt", name:"Healthcare Management & Policy", college:"O'Neill School of Public & Environmental Affairs",
+    admission:"Standard Admit", interest:["Public Affairs","Health & Medicine","Business & Money"], career:["healthcare","business","public"], salaryTier:"high",
+    desc:"Healthcare administration, policy, economics. Strong pipeline to hospital administration and health consulting.",
+    courses:["SPEA-H 124","SPEA-H 320","SPEA-H 411","SPEA-V 372","ECON-E 201"],
+    careers:["Hospital Administration","Health Consulting","Health Insurance","Pharma","Public Health Mgmt"],
+    salary:"$55k–$75k starting",
+    reality:"Underrated — healthcare is recession-resistant and the major hits the business side without Kelley admission. Grad school (MHA) common but not required to start.",
+    quote:"It's the back-of-house career — payer/provider/consulting — for people who don't want to be clinicians.",
+    quoteFrom:"Senior, Healthcare Mgmt & Policy",
+    rsos:["O'Neill Undergraduate Association","Public Health Association"],
+    minorsKey:"public"
+  },
+  { id:"lpp", name:"Law & Public Policy", college:"O'Neill School of Public & Environmental Affairs",
+    admission:"Standard Admit", interest:["Public Affairs","Law & Justice"], career:["law","public"], salaryTier:"mid",
+    desc:"Law-adjacent policy major: constitutional law, regulation, justice systems. Common pre-law route at IU.",
+    courses:["SPEA-V 264","SPEA-J 321","SPEA-J 401","POLS-Y 304"],
+    careers:["Pre-Law","Legislative Aide","Policy Analyst","Compliance"],
+    salary:"$48k–$65k starting",
+    reality:"Strong pre-law placement. By itself it's a generalist policy degree. Internships matter more than coursework.",
+    quote:"Best pre-law major outside political science at IU. The faculty actually do law.",
+    quoteFrom:"Senior, Law & Public Policy (pre-law)",
+    rsos:["Pre-Law Society","Phi Alpha Delta (Pre-Law)","Model United Nations (IUMUN)"],
+    minorsKey:"public"
+  },
+  { id:"artsmgmt", name:"Arts Management", college:"O'Neill School of Public & Environmental Affairs",
+    admission:"Standard Admit", interest:["Arts & Performance","Business & Money"], career:["business","creative"], salaryTier:"mid",
+    desc:"Nonprofit arts admin — symphonies, theaters, museums, festivals. Often paired with a Jacobs minor or studio art.",
+    courses:["SPEA-A 240","SPEA-A 415","SPEA-V 372","SPEA-A 392"],
+    careers:["Arts Administrator","Festival Director","Development / Fundraising","Museum Mgmt","Box Office Mgmt"],
+    salary:"$42k–$58k starting",
+    reality:"You're running a nonprofit — finance, fundraising, programming. Pair with Jacobs or Eskenazi for credibility in the artistic side.",
+    quote:"Add a music minor. Arts administrators with practitioner credibility move faster.",
+    quoteFrom:"Senior, Arts Mgmt + Music minor",
+    rsos:["IU Student Foundation"],
+    minorsKey:"public"
+  },
+
+  // ===== School of Education =====
+  { id:"elemed", name:"Elementary Education", college:"School of Education",
+    admission:"Education Admit (after sophomore year)", interest:["Education","People & Society"], career:["education"], salaryTier:"mid",
+    desc:"K-6 teacher licensure with student teaching. Indiana licensure leads to most other state reciprocities.",
+    courses:["EDUC-W 200","EDUC-M 300","EDUC-E 339","EDUC-M 425","EDUC-T 550"],
+    careers:["K-6 Teacher","ESL Teacher","Curriculum Developer","Education Nonprofit"],
+    salary:"$42k–$50k starting",
+    reality:"Heavy fieldwork beginning sophomore year. Student-teaching semester is unpaid and full-time. Job market is steady; pay is teacher-pay.",
+    quote:"It's a calling. Plan for the unpaid student-teaching semester financially from day one.",
+    quoteFrom:"Senior, Elementary Education",
+    rsos:["Education Student Association","Hoosiers Helping Hoosiers"],
+    minorsKey:"edu"
+  },
+  { id:"seced", name:"Secondary Education", college:"School of Education",
+    admission:"Education Admit + Subject Area Major", interest:["Education","People & Society"], career:["education"], salaryTier:"mid",
+    desc:"Middle/high-school teaching licensure. You also major in your content area (math, English, history, science). Most students graduate in 4.5–5 years.",
+    courses:["EDUC-W 200","EDUC-S 506","EDUC-S 460","EDUC-M 480","[Content Major Courses]"],
+    careers:["Secondary Teacher","Department Chair","Coach","Education Nonprofit"],
+    salary:"$42k–$52k starting",
+    reality:"Two majors. STEM teachers have stronger market and signing bonuses in some states. The major requires real content knowledge.",
+    quote:"Secondary STEM teachers are needed. Districts will fight for you.",
+    quoteFrom:"Senior, Secondary Math Education",
+    rsos:["Education Student Association"],
+    minorsKey:"edu"
+  },
+  { id:"sped", name:"Special Education", college:"School of Education",
+    admission:"Education Admit", interest:["Education","People & Society"], career:["education"], salaryTier:"mid",
+    desc:"Teaching students with disabilities across age ranges. Dual licensure tracks are common.",
+    courses:["EDUC-K 205","EDUC-K 311","EDUC-K 441","EDUC-K 488"],
+    careers:["Special Ed Teacher","Behavior Analyst (BCBA)","Resource Coordinator","Inclusion Specialist"],
+    salary:"$45k–$56k starting (signing bonuses common)",
+    reality:"Critical-need licensure — many districts pay extra. Emotionally demanding work; high burnout if not deeply called.",
+    quote:"You'll burn out without support systems. Build them now.",
+    quoteFrom:"Senior, Special Education",
+    rsos:["Student Council for Exceptional Children","Education Student Association"],
+    minorsKey:"edu"
+  },
+
+  // ===== Eskenazi School of Art, Architecture & Design =====
+  { id:"studioart", name:"Studio Art", college:"Eskenazi School of Art, Architecture & Design",
+    admission:"Portfolio Required (BFA)", interest:["Arts & Performance","Design"], career:["creative"], salaryTier:"entry",
+    desc:"Painting, sculpture, ceramics, photography, printmaking, fibers. BFA is portfolio-driven; BA is more flexible.",
+    courses:["SOAD-S 200","SOAD-S 250","SOAD-S 350","SOAD-S 470"],
+    careers:["Artist","Gallery / Curatorial","Art Education (with cert)","Illustrator","Designer"],
+    salary:"$30k–$50k starting (variable)",
+    reality:"Income from fine art alone is rare without grad school + commercial side. BFA students who pair with graphic design or marketing fare better.",
+    quote:"Pair the BFA with something marketable. Don't lose the practice — but pay rent.",
+    quoteFrom:"Senior, BFA Studio Art + Graphic Design minor",
+    rsos:["Visual Arts Society","AIGA Student Group at IU"],
+    minorsKey:"art"
+  },
+  { id:"graphicdesign", name:"Graphic Design", college:"Eskenazi School of Art, Architecture & Design",
+    admission:"Portfolio Required (BFA)", interest:["Arts & Performance","Design","Tech & Computing"], career:["creative","tech"], salaryTier:"high",
+    desc:"Branding, type, editorial, motion, UX/UI. BFA is portfolio-led; expect heavy critique culture.",
+    courses:["SOAD-G 220","SOAD-G 320","SOAD-G 420","SOAD-G 470","INFO-I 300"],
+    careers:["Graphic Designer","Brand Designer","UX/UI Designer","Art Director","Design Researcher"],
+    salary:"$55k–$75k starting (UX higher)",
+    reality:"Hire-able major if your portfolio is good. UX/UI pays the most. Critique culture is intense; thin skin will be a problem.",
+    quote:"Your portfolio is the major. Treat the BFA show like an interview.",
+    quoteFrom:"Senior, BFA Graphic Design (UX track)",
+    rsos:["AIGA Student Group at IU","Ad Club at IU"],
+    minorsKey:"design"
+  },
+  { id:"fashion", name:"Fashion Design", college:"Eskenazi School of Art, Architecture & Design",
+    admission:"Portfolio Required (BFA)", interest:["Arts & Performance","Design"], career:["creative"], salaryTier:"mid",
+    desc:"Apparel design, draping, patternmaking, textile, and fashion illustration with a senior runway show.",
+    courses:["SOAD-F 220","SOAD-F 270","SOAD-F 320","SOAD-F 470"],
+    careers:["Designer","Patternmaker","Buyer","Brand / Fashion Marketing"],
+    salary:"$42k–$60k starting",
+    reality:"You'll need a portfolio and ideally NYC or LA internships. Industry is intense and pay isn't great early.",
+    quote:"Intern in NYC at least once. The major doesn't substitute for the city.",
+    quoteFrom:"Senior, BFA Fashion Design",
+    rsos:["Threads Magazine","Visual Arts Society"],
+    minorsKey:"fashion"
+  },
+  { id:"interior", name:"Interior Design", college:"Eskenazi School of Art, Architecture & Design",
+    admission:"Portfolio Required (BFA)", interest:["Design","Arts & Performance"], career:["creative","business"], salaryTier:"mid",
+    desc:"CIDA-accredited interior design — residential, commercial, healthcare, hospitality. Strong technical and CAD content.",
+    courses:["SOAD-N 230","SOAD-N 330","SOAD-N 430","SOAD-N 470"],
+    careers:["Interior Designer","Architecture Firm Designer","Hospitality / Corporate","Sustainable Design"],
+    salary:"$48k–$65k starting",
+    reality:"Real career path with NCIDQ certification. Workload is heavy with studio culture all-nighters before reviews.",
+    quote:"It's an architecture-school workload. Sleep is optional in studio season.",
+    quoteFrom:"Senior, BFA Interior Design",
+    rsos:["Interior Design Society"],
+    minorsKey:"interior"
+  },
+  { id:"compdesign", name:"Comprehensive Design", college:"Eskenazi School of Art, Architecture & Design",
+    admission:"Portfolio Required (BFA)", interest:["Design","Arts & Performance"], career:["creative"], salaryTier:"mid",
+    desc:"Architecture-leaning, holistic design degree spanning sustainability, human factors, and product. IU's primary architecture-adjacent major.",
+    courses:["SOAD-D 220","SOAD-D 320","SOAD-D 420","SOAD-D 470"],
+    careers:["Designer / Architect (with grad school)","Sustainability Design","Industrial Design"],
+    salary:"$48k–$65k starting",
+    reality:"For licensed architecture, you'll need an accredited M.Arch. Strong portfolio of multi-scale projects gets students into top grad programs.",
+    quote:"Treat it as M.Arch prep. The portfolio you build here is what gets you into Yale or Michigan.",
+    quoteFrom:"Senior, Comprehensive Design",
+    rsos:["Architecture Student Group","Visual Arts Society"],
+    minorsKey:"comprehensive"
+  },
+
+  // ===== School of Nursing =====
+  { id:"nursing", name:"Nursing (BSN)", college:"School of Nursing",
+    admission:"Standard Admit + Cohort (Sophomore)", interest:["Health & Medicine","People & Society"], career:["healthcare"], salaryTier:"high",
+    desc:"Bachelor of Science in Nursing — clinicals, pathophysiology, pharmacology. Indianapolis-based clinical sites; Bloomington for early years.",
+    courses:["NURS-B 231","NURS-B 244","NURS-B 304","NURS-H 351","NURS-H 363","NURS-S 487"],
+    careers:["Registered Nurse (RN)","NICU / ICU / ER","Public Health Nurse","NP / CRNA (with grad)"],
+    salary:"$65k–$80k starting (varies by region)",
+    reality:"Cohort admission is competitive. The clinical hours and night-shift training are real. Job market is excellent and stable; burnout is the industry's biggest problem.",
+    quote:"It's the most stable major at IU. Plan for the cohort application early.",
+    quoteFrom:"Senior, BSN",
+    rsos:["Student Nurses Association","IUDM (Dance Marathon)"],
+    minorsKey:"nursing"
+  },
+
+  // ===== School of Optometry =====
+  { id:"vision", name:"Vision Science", college:"School of Optometry",
+    admission:"Standard Admit", interest:["Health & Medicine","Life Sciences","Science & Research"], career:["healthcare","research"], salaryTier:"mid",
+    desc:"Pre-optometry undergraduate track — eye anatomy, optics, vision research. IU is one of only a handful of optometry schools in the country.",
+    courses:["OPT-V 261","OPT-V 364","OPT-V 461","BIOL-L 211","CHEM-C 341"],
+    careers:["Optometry School (OD)","Vision Research","Med School","Pharma"],
+    salary:"$45k–$60k with BS; $130k+ with OD",
+    reality:"Pre-OD is the path; the BS alone is similar to a bio degree. Direct admission to IU's OD program is competitive.",
+    quote:"Treat it as pre-OD from freshman year. The BS alone is just a science degree.",
+    quoteFrom:"Senior, Vision Science (pre-OD)",
+    rsos:["Optometry Club","IU Pre-Med Association"],
+    minorsKey:"optometry"
+  },
+
+  // ===== School of Social Work =====
+  { id:"socwork", name:"Social Work", college:"School of Social Work",
+    admission:"Social Work Admit (Junior Year)", interest:["People & Society","Public Affairs","Health & Medicine"], career:["public","healthcare"], salaryTier:"mid",
+    desc:"BSW with field placement (450+ hours). Direct route to MSW with advanced standing.",
+    courses:["SWK-S 141","SWK-S 251","SWK-S 322","SWK-S 433","SWK-S 472"],
+    careers:["Case Manager","School Social Worker","Hospital SW","Mental Health (with MSW)","Child Welfare"],
+    salary:"$42k–$55k with BSW; $55k–$70k with MSW",
+    reality:"Emotionally heavy work. Caseloads and pay vary widely. The MSW (one extra year with advanced standing) opens clinical roles and licensure.",
+    quote:"Plan for the MSW. The BSW is the on-ramp.",
+    quoteFrom:"Senior, BSW",
+    rsos:["Social Work Student Organization"],
+    minorsKey:"socialwork"
+  },
+
+  // ===== Hamilton Lugar School =====
+  { id:"intl", name:"International Studies", college:"Hamilton Lugar School of Global & International Studies",
+    admission:"Standard Admit", interest:["Languages & Culture","Public Affairs"], career:["public","research"], salaryTier:"mid",
+    desc:"Interdisciplinary global studies — politics, economics, language, area concentration. Required language proficiency and study abroad.",
+    courses:["INTL-I 100","INTL-I 202","INTL-I 305","INTL-I 415","[Language requirement]"],
+    careers:["Foreign Service","International NGO","Intelligence","Global Business","Grad School"],
+    salary:"$45k–$65k starting",
+    reality:"Excellent breadth, but you have to develop a specialty (region + language) or it reads as vague. DC-area internships are common.",
+    quote:"Pick a region and a language and stay in it. Generalists struggle in this field.",
+    quoteFrom:"Senior, International Studies (Mideast track)",
+    rsos:["International Studies Association","Model United Nations (IUMUN)"],
+    minorsKey:"intl"
+  },
+  { id:"easian", name:"East Asian Studies", college:"Hamilton Lugar School of Global & International Studies",
+    admission:"Standard Admit", interest:["Languages & Culture","Public Affairs"], career:["public","research","education"], salaryTier:"mid",
+    desc:"East Asia focus with strong language requirement (Chinese, Japanese, Korean). Distinct from EALC (College) by being more policy-leaning.",
+    courses:["EAS-A 200","EAS-A 320","EAS-A 410","[Language requirement through 4th yr]"],
+    careers:["Foreign Service","International Business","Intelligence","Translation","Academia"],
+    salary:"$50k–$72k starting",
+    reality:"Career payoff scales with fluency. Two years in country is a serious differentiator.",
+    quote:"Live in country if you possibly can. The major opens doors; the language walks through them.",
+    quoteFrom:"Senior, East Asian Studies (Chinese)",
+    rsos:["Asian American Association","International Studies Association"],
+    minorsKey:"eastasian"
+  },
+  { id:"central", name:"Central Eurasian Studies", college:"Hamilton Lugar School of Global & International Studies",
+    admission:"Standard Admit", interest:["Languages & Culture","Public Affairs"], career:["public","research"], salaryTier:"high",
+    desc:"Languages and politics of Central Asia and the Turkic, Mongolian, Persian, Uralic worlds. IU is one of the only U.S. universities to teach these languages at depth.",
+    courses:["CEUS-T 150","CEUS-R 200","CEUS-U 100","CEUS-U 200"],
+    careers:["Federal Government","Intelligence","Foreign Service","International NGO","PhD"],
+    salary:"$55k–$80k starting (federal hiring premium)",
+    reality:"Niche, but the federal government hires fluent speakers in these languages aggressively. If you commit to the language, the path is more direct than you'd guess.",
+    quote:"It's a federal-job major in disguise. Take Uzbek or Pashto seriously and recruiters will find you.",
+    quoteFrom:"Senior, Central Eurasian Studies",
+    rsos:["International Studies Association","Model United Nations (IUMUN)"],
+    minorsKey:"intl"
+  },
+  { id:"neareast", name:"Near Eastern Languages & Cultures", college:"Hamilton Lugar School of Global & International Studies",
+    admission:"Standard Admit", interest:["Languages & Culture"], career:["public","research","education"], salaryTier:"high",
+    desc:"Arabic, Hebrew, Persian, Turkish — combined with literature, history, and politics of the Middle East and North Africa.",
+    courses:["NELC-A 100","NELC-H 100","NELC-A 250","NELC-A 491"],
+    careers:["Foreign Service","Intelligence","Translation","Academia","International NGO"],
+    salary:"$55k–$80k starting (federal premium)",
+    reality:"Like Central Eurasian, federal hiring is real for fluent speakers. Expect the language requirement to dominate your schedule.",
+    quote:"It's hard. It's also deeply rewarding and there's a job at the end.",
+    quoteFrom:"Senior, Near Eastern Languages (Arabic)",
+    rsos:["International Studies Association","Model United Nations (IUMUN)"],
+    minorsKey:"intl"
+  }
+];
+
+/* ============ FILTER OPTIONS ============ */
+const INTEREST_AREAS = [
+  "Tech & Computing","Business & Money","Health & Medicine","Life Sciences",
+  "Science & Research","Math & Logic","Arts & Performance","Music",
+  "Design","Languages & Culture","People & Society","Public Affairs",
+  "Communication","Education","Environment","Law & Justice"
+];
+
+const CAREER_BUCKETS = [
+  { id:"tech",       label:"Engineering & Tech" },
+  { id:"business",   label:"Business & Finance" },
+  { id:"healthcare", label:"Healthcare & Clinical" },
+  { id:"creative",   label:"Creative & Arts" },
+  { id:"research",   label:"Research & Academia" },
+  { id:"public",     label:"Public Service & Policy" },
+  { id:"media",      label:"Media & Journalism" },
+  { id:"education",  label:"Education & Teaching" },
+  { id:"law",        label:"Law & Pre-Law" },
+  { id:"science",    label:"Lab & Field Science" }
+];
+
+const SALARY_TIERS = [
+  { id:"entry", label:"Entry  ($35k–$50k)" },
+  { id:"mid",   label:"Mid    ($50k–$70k)" },
+  { id:"high",  label:"High   ($70k–$95k)" },
+  { id:"top",   label:"Top    ($95k+)" }
+];
+
+/* derive list of unique colleges from MAJORS */
+const COLLEGES = [...new Set(MAJORS.map(m => m.college))].sort();
+
+const ADMISSION_TYPES = [...new Set(MAJORS.map(m => m.admission))].sort();
+
+/* ============ APP STATE ============ */
+const state = {
+  view: "picker",
+  filters: { interest:new Set(), school:new Set(), career:new Set(), salary:new Set() },
+  pool: [],
+  swipeIndex: 0,
+  saved: new Set(),
+  rejected: new Set(),
+  exploreFilters: { search:"", school:"", interest:"", career:"", admission:"", salary:"" }
+};
+
+/* ============ HELPERS ============ */
+const $  = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+
+function majorMatchesFilters(m, f) {
+  if (f.interest.size && !m.interest.some(i => f.interest.has(i))) return false;
+  if (f.school.size   && !f.school.has(m.college)) return false;
+  if (f.career.size   && !m.career.some(c => f.career.has(c))) return false;
+  if (f.salary.size   && !f.salary.has(m.salaryTier)) return false;
+  return true;
+}
+
+function countMatching(testFilters) {
+  return MAJORS.filter(m => majorMatchesFilters(m, testFilters)).length;
+}
+
+/* ============ LOGIN ============ */
+$("#login-form").addEventListener("submit", e => {
+  e.preventDefault();
+  $("#login").classList.remove("active");
+  $("#login").style.display = "none";
+  $("#app").classList.add("active");
+  $("#app").style.display = "block";
+  setView("picker");
+});
+
+/* ============ NAV ============ */
+function setView(view) {
+  state.view = view;
+  $$(".view").forEach(v => v.style.display = "none");
+  $(`#view-${view}`).style.display = "block";
+  $$(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  if (view === "explore") renderExplore();
+  if (view === "saved")   renderSaved();
+  if (view === "swipe" && state.pool.length === 0) {
+    rebuildPool(); // fall back to all majors if user nav-jumped here
+  }
+  if (view === "swipe") renderSwipeStack();
+}
+$$(".nav-btn").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+
+/* ============ PICKER ============ */
+function buildPicker() {
+  // Interest chips
+  buildChips($("#chips-interest"), INTEREST_AREAS.map(i => ({id:i,label:i})), state.filters.interest);
+  // School chips
+  buildChips($("#chips-school"), COLLEGES.map(c => ({id:c,label:shortenCollege(c)})), state.filters.school);
+  // Career chips
+  buildChips($("#chips-career"), CAREER_BUCKETS, state.filters.career);
+  // Salary chips
+  buildChips($("#chips-salary"), SALARY_TIERS, state.filters.salary);
+  refreshChipStates();
+}
+
+const COLLEGE_SHORT = {
+  "Luddy School of Informatics, Computing, and Engineering": "Luddy School",
+  "Kelley School of Business": "Kelley School",
+  "College of Arts & Sciences": "College of Arts & Sciences",
+  "College of Arts & Sciences / O'Neill": "Arts & Sciences / O'Neill",
+  "Jacobs School of Music": "Jacobs School",
+  "The Media School": "The Media School",
+  "The Media School / Luddy": "Media School / Luddy",
+  "School of Public Health": "Public Health",
+  "O'Neill School of Public & Environmental Affairs": "O'Neill School",
+  "School of Education": "School of Education",
+  "Eskenazi School of Art, Architecture & Design": "Eskenazi School",
+  "School of Nursing": "School of Nursing",
+  "School of Optometry": "School of Optometry",
+  "School of Social Work": "School of Social Work",
+  "Hamilton Lugar School of Global & International Studies": "Hamilton Lugar School"
+};
+function shortenCollege(name) {
+  return COLLEGE_SHORT[name] || name;
+}
+
+function buildChips(container, items, selectedSet) {
+  container.innerHTML = "";
+  items.forEach(it => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.dataset.id = it.id;
+    chip.innerHTML = `${it.label}<span class="count"></span>`;
+    if (selectedSet.has(it.id)) chip.classList.add("selected");
+    chip.addEventListener("click", () => {
+      if (chip.classList.contains("disabled") && !selectedSet.has(it.id)) return;
+      if (selectedSet.has(it.id)) selectedSet.delete(it.id);
+      else selectedSet.add(it.id);
+      refreshChipStates();
+    });
+    container.appendChild(chip);
+  });
+}
+
+/* Smart greyout: for each unselected chip, simulate adding it and check pool size */
+function refreshChipStates() {
+  const groups = [
+    { container: $("#chips-interest"), key: "interest" },
+    { container: $("#chips-school"),   key: "school" },
+    { container: $("#chips-career"),   key: "career" },
+    { container: $("#chips-salary"),   key: "salary" }
+  ];
+
+  groups.forEach(g => {
+    g.container.querySelectorAll(".chip").forEach(chip => {
+      const id = chip.dataset.id;
+      const selected = state.filters[g.key].has(id);
+      chip.classList.toggle("selected", selected);
+      // Build a hypothetical-filter snapshot
+      const hypo = {
+        interest: new Set(state.filters.interest),
+        school:   new Set(state.filters.school),
+        career:   new Set(state.filters.career),
+        salary:   new Set(state.filters.salary)
+      };
+      if (selected) {
+        hypo[g.key].delete(id);   // would-be result if user deselects
+      } else {
+        hypo[g.key].add(id);      // would-be result if user selects this
+      }
+      const count = countMatching(hypo);
+      chip.querySelector(".count").textContent = `(${count})`;
+      chip.classList.toggle("disabled", !selected && count === 0);
+    });
+  });
+
+  const total = countMatching(state.filters);
+  const node = $("#pool-count");
+  node.innerHTML = `Pool: <strong>${total}</strong> majors match your filters`;
+  $("#btn-start-swipe").disabled = total === 0;
+}
+
+$("#btn-clear-picker").addEventListener("click", () => {
+  Object.values(state.filters).forEach(s => s.clear());
+  refreshChipStates();
+});
+
+$("#btn-start-swipe").addEventListener("click", () => {
+  rebuildPool();
+  state.swipeIndex = 0;
+  setView("swipe");
+});
+
+function rebuildPool() {
+  state.pool = MAJORS
+    .filter(m => majorMatchesFilters(m, state.filters))
+    .filter(m => !state.saved.has(m.id) && !state.rejected.has(m.id));
+  // light shuffle for variety
+  for (let i = state.pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.pool[i], state.pool[j]] = [state.pool[j], state.pool[i]];
+  }
+  // If pool empty (filters too narrow + everything seen), unblock by reusing all in filters
+  if (state.pool.length === 0) {
+    state.pool = MAJORS.filter(m => majorMatchesFilters(m, state.filters));
+  }
+  state.swipeIndex = 0;
+}
+
+/* ============ SWIPE ============ */
+function renderSwipeStack() {
+  const stage = $("#swipe-stage");
+  stage.innerHTML = "";
+  const remaining = state.pool.slice(state.swipeIndex, state.swipeIndex + 3);
+  if (remaining.length === 0) {
+    $("#swipe-actions").style.display = "none";
+    stage.innerHTML = `
+      <div class="swipe-empty">
+        <div class="swipe-empty-h">You're all caught up!</div>
+        <div class="swipe-empty-p">You've seen every major in this pool. Loosen filters or check your saved list.</div>
+        <button class="btn-primary" id="btn-back-picker">Adjust Filters</button>
+        <div style="height:10px;"></div>
+        <button class="btn-secondary" onclick="setView('saved')">View Saved (${state.saved.size})</button>
+      </div>`;
+    document.getElementById("btn-back-picker").addEventListener("click", () => setView("picker"));
+    return;
+  }
+  $("#swipe-actions").style.display = "flex";
+
+  // Render in reverse so the top card is last in DOM (renders on top)
+  remaining.reverse().forEach((m, idx) => {
+    const isTop = idx === remaining.length - 1;
+    const card = createSwipeCard(m, isTop, remaining.length - 1 - idx);
+    stage.appendChild(card);
+  });
+}
+
+function createSwipeCard(major, isTop, depth) {
+  const card = document.createElement("div");
+  card.className = "swipe-card";
+  card.dataset.id = major.id;
+  // Stack visual offset
+  const scale = 1 - depth * 0.04;
+  const ty    = depth * 8;
+  card.style.transform = `translateY(${ty}px) scale(${scale})`;
+  card.style.zIndex = (10 - depth);
+
+  card.innerHTML = `
+    <div class="swipe-overlay like">SAVE</div>
+    <div class="swipe-overlay nope">SKIP</div>
+    <div class="swipe-card-banner">
+      <div class="swipe-admission-tag">${major.admission}</div>
+      <div class="swipe-card-college">${shortenCollege(major.college)}</div>
+      <div class="swipe-card-title">${major.name}</div>
+    </div>
+    <div class="swipe-card-body">
+      <div class="swipe-section">
+        <div class="swipe-section-h">What it is</div>
+        <div class="swipe-desc">${major.desc}</div>
+      </div>
+      <div class="swipe-section">
+        <div class="swipe-section-h">Top Careers</div>
+        <div class="swipe-tag-row">
+          ${major.careers.slice(0,3).map(c => `<span class="swipe-tag">${c}</span>`).join("")}
+        </div>
+      </div>
+      <div class="swipe-section">
+        <div class="swipe-section-h">Starting Salary</div>
+        <div class="swipe-salary">${major.salary}</div>
+      </div>
+      <div class="swipe-section">
+        <div class="swipe-section-h">Sample Courses</div>
+        <div class="swipe-tag-row">
+          ${major.courses.slice(0,4).map(c => `<span class="swipe-tag">${c}</span>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  if (isTop) attachSwipeHandlers(card, major);
+  return card;
+}
+
+function attachSwipeHandlers(card, major) {
+  let startX=0, startY=0, dx=0, dy=0, dragging=false;
+  const likeEl = card.querySelector(".swipe-overlay.like");
+  const nopeEl = card.querySelector(".swipe-overlay.nope");
+  const threshold = 110;
+
+  const start = (x, y) => {
+    startX = x; startY = y; dx = 0; dy = 0; dragging = true;
+    card.classList.add("dragging");
+  };
+  const move = (x, y) => {
+    if (!dragging) return;
+    dx = x - startX; dy = y - startY;
+    const rot = dx / 18;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    likeEl.style.opacity = Math.max(0, dx / threshold);
+    nopeEl.style.opacity = Math.max(0, -dx / threshold);
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    card.classList.remove("dragging");
+    if (dx > threshold)        finishSwipe(card, major, "like");
+    else if (dx < -threshold)  finishSwipe(card, major, "skip");
+    else {
+      card.style.transform = "";
+      likeEl.style.opacity = 0; nopeEl.style.opacity = 0;
+    }
+  };
+
+  card.addEventListener("mousedown", e => { start(e.clientX, e.clientY); e.preventDefault(); });
+  window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
+  window.addEventListener("mouseup", end);
+
+  card.addEventListener("touchstart", e => { const t=e.touches[0]; start(t.clientX, t.clientY); }, {passive:true});
+  card.addEventListener("touchmove",  e => { const t=e.touches[0]; move(t.clientX, t.clientY); }, {passive:true});
+  card.addEventListener("touchend", end);
+}
+
+function finishSwipe(card, major, action) {
+  // Animate off-screen
+  const dir = action === "like" ? 1 : -1;
+  card.style.transition = "transform 0.4s ease, opacity 0.4s";
+  card.style.transform = `translate(${dir * 600}px, 80px) rotate(${dir * 30}deg)`;
+  card.style.opacity = "0";
+  if (action === "like") state.saved.add(major.id);
+  else state.rejected.add(major.id);
+  updateSavedBadge();
+  setTimeout(() => {
+    state.swipeIndex++;
+    renderSwipeStack();
+  }, 360);
+}
+
+function programmaticSwipe(action) {
+  const top = $("#swipe-stage").lastElementChild;
+  if (!top || !top.classList.contains("swipe-card")) return;
+  const id = top.dataset.id;
+  const major = MAJORS.find(m => m.id === id);
+  finishSwipe(top, major, action);
+}
+$("#btn-skip").addEventListener("click", () => programmaticSwipe("skip"));
+$("#btn-like").addEventListener("click", () => programmaticSwipe("like"));
+$("#btn-info").addEventListener("click", () => {
+  const top = $("#swipe-stage").lastElementChild;
+  if (!top || !top.classList.contains("swipe-card")) return;
+  const id = top.dataset.id;
+  const major = MAJORS.find(m => m.id === id);
+  openDetail(major);
+});
+
+/* ============ EXPLORE ============ */
+function buildExploreSidebar() {
+  const schools = COLLEGES;
+  const interestSel = $("#explore-interest");
+  INTEREST_AREAS.forEach(i => {
+    const opt = document.createElement("option"); opt.value = i; opt.textContent = i;
+    interestSel.appendChild(opt);
+  });
+  const schoolSel = $("#explore-school");
+  schools.forEach(s => {
+    const opt = document.createElement("option"); opt.value = s; opt.textContent = shortenCollege(s);
+    schoolSel.appendChild(opt);
+  });
+  const careerSel = $("#explore-career");
+  CAREER_BUCKETS.forEach(c => {
+    const opt = document.createElement("option"); opt.value = c.id; opt.textContent = c.label;
+    careerSel.appendChild(opt);
+  });
+  const admSel = $("#explore-admission");
+  ADMISSION_TYPES.forEach(a => {
+    const opt = document.createElement("option"); opt.value = a; opt.textContent = a;
+    admSel.appendChild(opt);
+  });
+  ["explore-search","explore-school","explore-interest","explore-career","explore-admission","explore-salary"]
+    .forEach(id => $(`#${id}`).addEventListener("input", renderExplore));
+  $("#btn-clear-explore").addEventListener("click", () => {
+    ["explore-search","explore-school","explore-interest","explore-career","explore-admission","explore-salary"]
+      .forEach(id => $(`#${id}`).value = "");
+    renderExplore();
+  });
+}
+
+function renderExplore() {
+  const f = {
+    search: $("#explore-search").value.trim().toLowerCase(),
+    school: $("#explore-school").value,
+    interest: $("#explore-interest").value,
+    career: $("#explore-career").value,
+    admission: $("#explore-admission").value,
+    salary: $("#explore-salary").value
+  };
+  const filtered = MAJORS.filter(m => {
+    if (f.search && !m.name.toLowerCase().includes(f.search) && !m.desc.toLowerCase().includes(f.search)) return false;
+    if (f.school && m.college !== f.school) return false;
+    if (f.interest && !m.interest.includes(f.interest)) return false;
+    if (f.career && !m.career.includes(f.career)) return false;
+    if (f.admission && m.admission !== f.admission) return false;
+    if (f.salary && m.salaryTier !== f.salary) return false;
+    return true;
+  });
+  $("#explore-count").textContent = filtered.length;
+  const grid = $("#explore-grid");
+  grid.innerHTML = "";
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">No majors match your filters. Try clearing one.</div>`;
+    return;
+  }
+  filtered.forEach(m => grid.appendChild(miniCard(m)));
+}
+
+function miniCard(m) {
+  const card = document.createElement("div");
+  card.className = "mini-card";
+  card.innerHTML = `
+    <div class="mini-card-college">${shortenCollege(m.college)}</div>
+    <div class="mini-card-name">${m.name}</div>
+    <div class="mini-card-desc">${m.desc}</div>
+    <div class="mini-card-footer">
+      <span class="mini-card-salary">${m.salary.split(' ')[0]}</span>
+      <span class="mini-card-tag">${m.admission.replace(' (Kelley)','').replace(' (after sophomore year)','').replace(' + Subject Area Major','')}</span>
+    </div>`;
+  card.addEventListener("click", () => openDetail(m));
+  return card;
+}
+
+/* ============ SAVED ============ */
+function renderSaved() {
+  const ids = [...state.saved];
+  const list = MAJORS.filter(m => ids.includes(m.id));
+  $("#saved-count2").textContent = list.length;
+  const grid = $("#saved-grid");
+  grid.innerHTML = "";
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="empty-state">No saved majors yet. Swipe right on ones you like!</div>`;
+    return;
+  }
+  list.forEach(m => grid.appendChild(miniCard(m)));
+}
+function updateSavedBadge() {
+  $("#saved-count").textContent = state.saved.size;
+}
+$("#btn-clear-saved").addEventListener("click", () => {
+  if (!confirm("Clear all saved majors?")) return;
+  state.saved.clear();
+  state.rejected.clear();
+  updateSavedBadge();
+  renderSaved();
+});
+
+/* ============ DETAIL MODAL ============ */
+function openDetail(m) {
+  const isSaved = state.saved.has(m.id);
+  const minorsList = MINORS_DATA[m.minorsKey] || [];
+  // Pull RSO suggestions: those listed in major + any from RSOS that share a tag with this major's interests/career
+  const explicitRsos = (m.rsos || []).map(name => RSOS.find(r => r.name === name)).filter(Boolean);
+  const html = `
+    <div class="modal-banner">
+      <button class="modal-close" id="modal-close-x">×</button>
+      <div class="modal-college">${m.college}</div>
+      <div class="modal-title">${m.name}</div>
+      <div class="modal-meta">
+        <span class="modal-meta-tag">${m.admission}</span>
+        ${m.interest.slice(0,2).map(i => `<span class="modal-meta-tag">${i}</span>`).join("")}
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h4>Description</h4>
+        <p>${m.desc}</p>
+      </div>
+      <div class="modal-section">
+        <h4>Sample Courses</h4>
+        <div class="courses-grid">
+          ${m.courses.map(c => `<span class="course-tag">${c}</span>`).join("")}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4>Career Paths</h4>
+        <div class="careers-grid">
+          ${m.careers.map(c => `<span class="career-tag">${c}</span>`).join("")}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4>Starting Salary Range</h4>
+        <span class="salary-pill">${m.salary}</span>
+      </div>
+      <div class="modal-section">
+        <h4>Reality Check</h4>
+        <div class="reality-box">${m.reality}</div>
+      </div>
+      <div class="modal-section">
+        <h4>Peer Quote</h4>
+        <div class="quote-box">
+          ${m.quote}
+          <div class="quote-attr">— ${m.quoteFrom}</div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4>RSOs & Clubs (HoosiersLink)</h4>
+        <div class="rso-list">
+          ${explicitRsos.map(r => `
+            <div class="rso-item">
+              <div>
+                <div class="rso-name">${r.name}</div>
+                <div class="rso-desc">${r.desc}</div>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>
+      ${minorsList.length ? `
+      <div class="modal-section">
+        <h4>Common Companion Minors</h4>
+        <div class="careers-grid">
+          ${minorsList.map(min => `<span class="career-tag">${min}</span>`).join("")}
+        </div>
+      </div>` : ""}
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modal-close-btn">Close</button>
+        <button class="btn-primary" id="modal-save-btn">${isSaved ? "♥ Saved" : "♥ Save Major"}</button>
+      </div>
+    </div>`;
+  $("#modal-content").innerHTML = html;
+  $("#modal").classList.add("active");
+  $("#modal-close-x").addEventListener("click", closeModal);
+  $("#modal-close-btn").addEventListener("click", closeModal);
+  $("#modal-save-btn").addEventListener("click", () => {
+    if (state.saved.has(m.id)) state.saved.delete(m.id);
+    else state.saved.add(m.id);
+    updateSavedBadge();
+    if (state.view === "saved") renderSaved();
+    openDetail(m); // re-render the modal
+  });
+}
+function closeModal() { $("#modal").classList.remove("active"); }
+$("#modal").addEventListener("click", e => { if (e.target === $("#modal")) closeModal(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+  if (state.view === "swipe" && !$("#modal").classList.contains("active")) {
+    if (e.key === "ArrowLeft")  programmaticSwipe("skip");
+    if (e.key === "ArrowRight") programmaticSwipe("like");
+  }
+});
+
+/* ============ INIT ============ */
+buildPicker();
+buildExploreSidebar();
+updateSavedBadge();
+</script>
+</body>
+</html>
+
